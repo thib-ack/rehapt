@@ -14,13 +14,11 @@ import (
 	"time"
 )
 
+// DefaultFailFunction is the default fonction called by
+// TestAssert in case of failure
 func DefaultFailFunction(err error) {
 	fmt.Println("Error:", err)
 }
-
-// ideas to add:
-// Raw body to request
-// replace vars in request body
 
 // Rehapt - REST HTTP API Test
 type Rehapt struct {
@@ -74,7 +72,7 @@ func (r *Rehapt) GetVariable(name string) interface{} {
 	return r.variables[name]
 }
 
-// GetVariable allow to retrive a variable value as a string from its name
+// GetVariableString allow to retrive a variable value as a string from its name
 // empty string is returned if variable is not found
 func (r *Rehapt) GetVariableString(name string) string {
 	if value, ok := r.variables[name].(string); ok == true {
@@ -107,7 +105,7 @@ func (r *Rehapt) SetDefaultTimeDeltaFormat(format string) {
 	r.defaultTimeDeltaFormat = format
 }
 
-// This is the main function of the library
+// Test is the main function of the library
 // it executes a given TestCase, i.e. do the request and
 // check if the response is matching the expected response
 func (r *Rehapt) Test(testcase TestCase) error {
@@ -468,7 +466,7 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 		// to do this we just have to skip the map size comparison
 		if expectedType != reflect.TypeOf(PartialM{}) {
 			if expectedValue.Len() != actualValue.Len() {
-				return fmt.Errorf("different map sizes. Expected %v, got %v. Expected %v got %v", expectedValue.Len(), actualValue.Len(), expected, actual)
+				return fmt.Errorf("different map sizes. Expected %v, got %v", expectedValue.Len(), actualValue.Len())
 			}
 		}
 

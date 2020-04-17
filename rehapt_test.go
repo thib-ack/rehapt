@@ -1680,7 +1680,7 @@ func TestInvalidCaseIncorrectResponseMapDifferentSize(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different map sizes. Expected 2, got 1. Expected map[foo:bar key:value] got map[key:value]`); e != "" {
+	if e := ExpectError(err, `different map sizes. Expected 2, got 1`); e != "" {
 		t.Error(e)
 	}
 }
