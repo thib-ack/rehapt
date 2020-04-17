@@ -1314,7 +1314,7 @@ func TestInvalidCaseIncorrectHTTPCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `reponse code does not match. Expected 200, got 401`); e != "" {
+	if e := ExpectError(err, `response code does not match. Expected 200, got 401`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1531,7 +1531,7 @@ func TestInvalidCaseIncorrectResponseHeader(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `reponse header X-Custom does not match. Expected custom value 123, got not right value`); e != "" {
+	if e := ExpectError(err, `response header X-Custom does not match. Expected custom value 123, got not right value`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2198,7 +2198,7 @@ func TestInvalidCaseRawStringDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "reponse body does not match. Expected Hello this is plain text, got Hello this is plain text 1234"); e != "" {
+	if e := ExpectError(err, "response body does not match. Expected Hello this is plain text, got Hello this is plain text 1234"); e != "" {
 		t.Error(e)
 	}
 }

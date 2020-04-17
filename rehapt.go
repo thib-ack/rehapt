@@ -144,18 +144,18 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	// And start to check result.
 	// First check HTTP response code
 	if testcase.Response.Code != recorder.Code {
-		return fmt.Errorf("reponse code does not match. Expected %d, got %d", testcase.Response.Code, recorder.Code)
+		return fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, recorder.Code)
 	}
 
 	// Check headers, but not all of them. Only the one expected by the user
 	for header, value := range testcase.Response.Headers {
 		if value != recorder.Header().Get(header) {
-			return fmt.Errorf("reponse header %v does not match. Expected %v, got %v", header, value, recorder.Header().Get(header))
+			return fmt.Errorf("response header %v does not match. Expected %v, got %v", header, value, recorder.Header().Get(header))
 		}
 	}
 
 	// Want a raw comparison ?
-	// This is usefull if response cannot be unmarshaled. (for example simple plain/text output)
+	// This is useful if response cannot be unmarshaled. (for example simple plain/text output)
 	if testcase.Response.Raw != nil {
 		actualBody := recorder.Body.String()
 
@@ -197,7 +197,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 			}
 			// Otherwise, compare full values
 			if rawObject != recorder.Body.String() {
-				return fmt.Errorf("reponse body does not match. Expected %v, got %v", rawObject, recorder.Body.String())
+				return fmt.Errorf("response body does not match. Expected %v, got %v", rawObject, recorder.Body.String())
 			}
 			return nil
 		}
@@ -222,7 +222,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 		}
 	}
 
-	// Compare the response body with our testcase reponse object
+	// Compare the response body with our testcase response object
 	// We could have used reflect.DeepEqual but we want finer comparison,
 	// which allow ignoring some fields, storing variables, using variables, etc.
 	// This is the main purpose of this library
