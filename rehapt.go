@@ -33,6 +33,9 @@ type Rehapt struct {
 	defaultTimeDeltaFormat string
 }
 
+// NewRehapt build a new Rehapt instance from the given http.Handler
+// `handler` must be your server global handler. For example it could be
+// a simple `http.NewServeMux()` or an complex third-party library mux
 func NewRehapt(handler http.Handler) *Rehapt {
 	return &Rehapt{
 		httpHandler:            handler,
@@ -45,26 +48,34 @@ func NewRehapt(handler http.Handler) *Rehapt {
 	}
 }
 
+// SetHttpHandler allow to change the http.Handler used to run requests
 func (r *Rehapt) SetHttpHandler(handler http.Handler) {
 	r.httpHandler = handler
 }
 
+// SetMarshaler allow to change the marshaling function used to encode requests body
 func (r *Rehapt) SetMarshaler(marshaler func(v interface{}) ([]byte, error)) {
 	r.marshaler = marshaler
 }
 
+// SetUnmarshaler allow to change the unmarshaling function used to decode requests response
 func (r *Rehapt) SetUnmarshaler(unmarshaler func(data []byte, v interface{}) error) {
 	r.unmarshaler = unmarshaler
 }
 
+// SetFail allow to change the function called when TestAssert() encounter an error
 func (r *Rehapt) SetFail(fail func(err error)) {
 	r.fail = fail
 }
 
+// GetVariable allow to retrive a variable value from its name
+// nil is returned if variable is not found
 func (r *Rehapt) GetVariable(name string) interface{} {
 	return r.variables[name]
 }
 
+// GetVariable allow to retrive a variable value as a string from its name
+// empty string is returned if variable is not found
 func (r *Rehapt) GetVariableString(name string) string {
 	if value, ok := r.variables[name].(string); ok == true {
 		return value
@@ -72,18 +83,26 @@ func (r *Rehapt) GetVariableString(name string) string {
 	return ""
 }
 
+// SetVariable allow to define manually a variable
 func (r *Rehapt) SetVariable(name string, value interface{}) {
 	r.variables[name] = value
 }
 
+// GetDefaultHeader returns the default request header value from its name
 func (r *Rehapt) GetDefaultHeader(name string) string {
 	return r.defaultHeaders[name]
 }
 
+// SetDefaultHeader allow to add a default request header.
+// This header will be added to all requests, however each
+// TestCase can override its value by simply adding it to Request Headers
 func (r *Rehapt) SetDefaultHeader(name string, value string) {
 	r.defaultHeaders[name] = value
 }
 
+// SetDefaultTimeDeltaFormat allow to change the default time format
+// It is used by TimeDelta, to parse the actual string value as a time
+// Default is set to `time.RFC3339` which is ok for JSON
 func (r *Rehapt) SetDefaultTimeDeltaFormat(format string) {
 	r.defaultTimeDeltaFormat = format
 }
@@ -120,7 +139,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	}
 
 	// The path might contains a variable reference (like _xx_). we have to replace it.
-	testcase.Request.Path = r.ReplaceVars(testcase.Request.Path)
+	testcase.Request.Path = r.replaceVars(testcase.Request.Path)
 
 	// Now start to build the HTTP request
 	request, err := http.NewRequest(testcase.Request.Method, testcase.Request.Path, body)
@@ -232,6 +251,8 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	return nil
 }
 
+// TestAssert works exactly like Test except it report the error if not nil
+// using the Fail function defined by SetFail()
 func (r *Rehapt) TestAssert(testcase TestCase) {
 	if err := r.Test(testcase); err != nil {
 		if r.fail != nil {
@@ -243,7 +264,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 var variableStoreRegexp = regexp.MustCompile(`^\$([a-zA-Z0-9]+)\$$`)
 var variableLoadRegexp = regexp.MustCompile(`_[a-zA-Z0-9]+_`)
 
-func (r *Rehapt) ReplaceVars(str string) string {
+func (r *Rehapt) replaceVars(str string) string {
 	return variableLoadRegexp.ReplaceAllStringFunc(str, func(name string) string {
 		// Remove the '_' prefix and suffix to get only the variable name
 		varname := name[1 : len(name)-1]
@@ -494,7 +515,7 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 		}
 
 		// Make var replacement in case of
-		expectedStr = r.ReplaceVars(expectedStr)
+		expectedStr = r.replaceVars(expectedStr)
 
 		// If regexp, then process differently
 		if expectedType == reflect.TypeOf(Regexp("")) {
