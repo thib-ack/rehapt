@@ -2,8 +2,8 @@ package examples
 
 import (
 	"fmt"
+	"github.com/thib-ack/rehapt"
 	"net/http"
-	"rehapt"
 	"testing"
 )
 

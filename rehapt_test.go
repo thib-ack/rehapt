@@ -3,8 +3,8 @@ package rehapt_test
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/thib-ack/rehapt"
 	"net/http"
-	. "rehapt"
 	"testing"
 	"time"
 )

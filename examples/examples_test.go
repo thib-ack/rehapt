@@ -1,8 +1,8 @@
 package examples
 
 import (
+	. "github.com/thib-ack/rehapt"
 	"net/http"
-	. "rehapt"
 	"testing"
 	"time"
 )
