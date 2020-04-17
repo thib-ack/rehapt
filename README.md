@@ -9,6 +9,7 @@ handle any other format as long as it marshal/unmarshal to/from simple maps and 
 
 ## Features
 
+- Support Go v1.7+
 - Work on `http.Handler`, no need to really start your http server
 - Describe the request you want to perform
 - Describe the object you expect as response
@@ -23,6 +24,7 @@ handle any other format as long as it marshal/unmarshal to/from simple maps and 
     - Load variables to reuse later
     - Unsorted slice expectation if order doesn't matter
     - Partial map expectation when only some keys matter
+- No third-party dependencies
 
 ## Installation
 
