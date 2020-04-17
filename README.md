@@ -39,11 +39,12 @@ See [examples](https://github.com/thib-ack/rehapt/blob/master/examples) folder f
 #### Simple example
 
 ```go
-package simple
+package example
 
 import (
-  "testing"
-  . "github.com/thib-ack/rehapt"
+    . "github.com/thib-ack/rehapt"
+    "net/http"
+    "testing"
 )
 
 func TestAPISimple(t *testing.T) {
@@ -84,11 +85,12 @@ func TestAPISimple(t *testing.T) {
 Obviously more advanced features are supported:
 
 ```go
-package simple
+package example
 
 import (
-  "testing"
-  . "github.com/thib-ack/rehapt"
+    . "github.com/thib-ack/rehapt"
+    "net/http"
+    "testing"
 )
 
 func TestAPIAdvanced(t *testing.T) {
@@ -134,11 +136,12 @@ func TestAPIAdvanced(t *testing.T) {
 Rehapt also includes a variable system, used to extract values from API responses and use them in later API calls.
 
 ```go
-package simple
+package example
 
 import (
-  "testing"
-  . "github.com/thib-ack/rehapt"
+    . "github.com/thib-ack/rehapt"
+    "net/http"
+    "testing"
 )
 
 func TestAPIVariables(t *testing.T) {
