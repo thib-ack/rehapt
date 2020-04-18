@@ -1,3 +1,43 @@
+// Package rehapt allows to build REST HTTP API test cases by describing the request to execute
+// and the expected response object. The library takes care of comparing the expected and actual response
+// and reports any errors.
+// It has been designed to work very well for JSON APIs
+//
+// Example:
+//
+//  func TestAPISimple(t *testing.T) {
+//    r := NewRehapt(yourHttpServerMux)
+//
+//    // Each testcase consist of a description of the request to execute
+//    // and a description of the expected response
+//    // By default the response description is exhaustive.
+//    // If an actual response field is not listed here, an error will be triggered
+//    // of course if an expected field described here is not present in response, an error will be triggered too.
+//    r.TestAssert(TestCase{
+//        Request: TestRequest{
+//            Method: "GET",
+//            Path:   "/api/user/1",
+//        },
+//        Response: TestResponse{
+//            Code: http.StatusOK,
+//            Object: M{
+//                "id":   "1",
+//                "name": "John",
+//                "age":  51,
+//                "pets": S{ // S for slice, M for map. Easy right ?
+//                    M{
+//                        "id":   "2",
+//                        "name": "Pepper the cat",
+//                        "type": "cat",
+//                    },
+//                },
+//                "weddingdate": "2019-06-22T16:00:00.000Z",
+//            },
+//        },
+//    })
+//  }
+//
+// See https://github.com/thib-ack/rehapt/tree/master/examples for more examples
 package rehapt
 
 import (
@@ -21,6 +61,8 @@ func DefaultFailFunction(err error) {
 }
 
 // Rehapt - REST HTTP API Test
+// This is the main structure of the library.
+// You can build it using the `NewRehapt()` function.
 type Rehapt struct {
 	httpHandler            http.Handler
 	marshaler              func(v interface{}) ([]byte, error)
@@ -51,22 +93,25 @@ func (r *Rehapt) SetHttpHandler(handler http.Handler) {
 	r.httpHandler = handler
 }
 
-// SetMarshaler allow to change the marshaling function used to encode requests body
+// SetMarshaler allow to change the marshaling function used to encode requests body.
+// The default marshaler is `json.Marshal`
 func (r *Rehapt) SetMarshaler(marshaler func(v interface{}) ([]byte, error)) {
 	r.marshaler = marshaler
 }
 
-// SetUnmarshaler allow to change the unmarshaling function used to decode requests response
+// SetUnmarshaler allow to change the unmarshaling function used to decode requests response.
+// The default unmarshaler is `json.Unmarshal`
 func (r *Rehapt) SetUnmarshaler(unmarshaler func(data []byte, v interface{}) error) {
 	r.unmarshaler = unmarshaler
 }
 
-// SetFail allow to change the function called when TestAssert() encounter an error
+// SetFail allow to change the function called when TestAssert() encounter an error.
+// The default Fail callback is `DefaultFailFunction` which simply prints the error
 func (r *Rehapt) SetFail(fail func(err error)) {
 	r.fail = fail
 }
 
-// GetVariable allow to retrive a variable value from its name
+// GetVariable allow to retrive a variable value from its name.
 // nil is returned if variable is not found
 func (r *Rehapt) GetVariable(name string) interface{} {
 	return r.variables[name]
@@ -81,35 +126,38 @@ func (r *Rehapt) GetVariableString(name string) string {
 	return ""
 }
 
-// SetVariable allow to define manually a variable
+// SetVariable allow to define manually a variable.
+// Variable names are strings, however values can be any type
 func (r *Rehapt) SetVariable(name string, value interface{}) {
 	r.variables[name] = value
 }
 
-// GetDefaultHeader returns the default request header value from its name
+// GetDefaultHeader returns the default request header value from its name.
+// Default headers are added automatically to all requests
 func (r *Rehapt) GetDefaultHeader(name string) string {
 	return r.defaultHeaders[name]
 }
 
 // SetDefaultHeader allow to add a default request header.
 // This header will be added to all requests, however each
-// TestCase can override its value by simply adding it to Request Headers
+// TestCase can override its value
 func (r *Rehapt) SetDefaultHeader(name string, value string) {
 	r.defaultHeaders[name] = value
 }
 
 // SetDefaultTimeDeltaFormat allow to change the default time format
-// It is used by TimeDelta, to parse the actual string value as a time
-// Default is set to `time.RFC3339` which is ok for JSON
+// It is used by `TimeDelta`, to parse the actual string value as a `time.Time`
+// Default is set to `time.RFC3339` which is ok for JSON.
+// This default format can be changed manually for each `TimeDelta`
 func (r *Rehapt) SetDefaultTimeDeltaFormat(format string) {
 	r.defaultTimeDeltaFormat = format
 }
 
 // Test is the main function of the library
 // it executes a given TestCase, i.e. do the request and
-// check if the response is matching the expected response
+// check if the actual response is matching the expected response
 func (r *Rehapt) Test(testcase TestCase) error {
-	// If we dont have the minimum, cannot go further.
+	// If we don't have the minimum, we cannot go further.
 	if r.httpHandler == nil {
 		return fmt.Errorf("nil HTTP handler")
 	}
@@ -149,12 +197,12 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	for k, v := range r.defaultHeaders {
 		request.Header.Set(k, v)
 	}
-	// Add the testcase defined headers. This override any default header previously set
+	// Add the testcase defined headers. This overrides any default header previously set
 	for k, v := range testcase.Request.Headers {
 		request.Header.Set(k, v)
 	}
 
-	// Now execute request
+	// Now execute the request and record its response
 	recorder := httptest.NewRecorder()
 	r.httpHandler.ServeHTTP(recorder, request)
 
@@ -164,10 +212,11 @@ func (r *Rehapt) Test(testcase TestCase) error {
 		return fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, recorder.Code)
 	}
 
-	// Check headers, but not all of them. Only the one expected by the user
+	// Check headers, but not all of them. Only the ones expected by the user
 	for header, value := range testcase.Response.Headers {
-		if value != recorder.Header().Get(header) {
-			return fmt.Errorf("response header %v does not match. Expected %v, got %v", header, value, recorder.Header().Get(header))
+		actualValue := recorder.Header().Get(header)
+		if value != actualValue {
+			return fmt.Errorf("response header %v does not match. Expected %v, got %v", header, value, actualValue)
 		}
 	}
 
@@ -249,8 +298,8 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	return nil
 }
 
-// TestAssert works exactly like Test except it report the error if not nil
-// using the Fail function defined by SetFail()
+// TestAssert works exactly like `Test` except it reports the error if not nil
+// using the fail callback function defined by `SetFail` (or default one)
 func (r *Rehapt) TestAssert(testcase TestCase) {
 	if err := r.Test(testcase); err != nil {
 		if r.fail != nil {
