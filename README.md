@@ -1,8 +1,8 @@
 
 # rehapt <a href="https://travis-ci.org/thib-ack/rehapt"><img src="https://travis-ci.org/thib-ack/rehapt.svg?branch=master"></a> <a href="https://goreportcard.com/report/thib-ack/rehapt"><img src="http://goreportcard.com/badge/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
 
-Rehapt is a declarative REST HTTP API testing library. 
-You describe how you want your HTTP API to behave and the library take care of comparing the expected and actual response elements.
+Rehapt is a Golang declarative REST HTTP API testing library.
+You describe how you expect your HTTP API to behave and the library take care of comparing the expected and actual response elements.
 
 This library has been designed to work very well for JSON APIs but it can 
 handle any other format as long as it marshal/unmarshal to/from simple maps and slices
@@ -15,13 +15,14 @@ handle any other format as long as it marshal/unmarshal to/from simple maps and 
 - Describe the object you expect as response
 - Easy to configure
 - Define default headers (useful for auth for example)
-- Smart response expectations
+- Include a variable system to extract values from API responses and reuse them later
+- Smart response expectations:
     - Ignore some fields
     - Regexp string expectation
     - Expect times with delta
     - Expect numbers with delta
     - Store fields in variables
-    - Load variables to reuse later
+    - Load variables previously stored
     - Unsorted slice expectation if order doesn't matter
     - Partial map expectation when only some keys matter
 - No third-party dependencies
@@ -29,7 +30,7 @@ handle any other format as long as it marshal/unmarshal to/from simple maps and 
 ## Installation
 
 ```bash
-go get -u github.com/thib-ack/rehapt
+go get github.com/thib-ack/rehapt
 ```
 
 ## Examples
@@ -91,6 +92,7 @@ import (
     . "github.com/thib-ack/rehapt"
     "net/http"
     "testing"
+    "time"
 )
 
 func TestAPIAdvanced(t *testing.T) {
@@ -139,6 +141,7 @@ Rehapt also includes a variable system, used to extract values from API response
 package example
 
 import (
+    "fmt"
     . "github.com/thib-ack/rehapt"
     "net/http"
     "testing"
@@ -188,7 +191,7 @@ func TestAPIVariables(t *testing.T) {
 
     // Or we can play with the variables if we need
     fmt.Println("Its age is ", r.GetVariable("age"))
-    // We can also define them by hand
+    // We can also define them by hand. Any type of value is supported
     r.SetVariable("myvar", M{"key": "value"})
 }
 ```
