@@ -317,7 +317,7 @@ func TestValidCaseSimpleRequestBody(t *testing.T) {
 		if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
 			t.Error(err)
 		}
-		if expected, actual := body.Msg, "ok"; expected != actual {
+		if expected, actual := "ok", body.Msg; expected != actual {
 			t.Errorf("expected value %v but got %v", expected, actual)
 		}
 	})
@@ -347,7 +347,7 @@ func TestValidCaseSimpleRequestDefaultHeader(t *testing.T) {
 	c.r.SetDefaultHeader("X-Custom", "custom value 123")
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
-		if expected, actual := req.Header.Get("X-Custom"), "custom value 123"; expected != actual {
+		if expected, actual := "custom value 123", req.Header.Get("X-Custom"); expected != actual {
 			t.Errorf("expected value %v but got %v", expected, actual)
 		}
 		w.WriteHeader(http.StatusOK)
@@ -380,7 +380,7 @@ func TestValidCaseSimpleRequestHeader(t *testing.T) {
 	c.r.SetDefaultHeader("X-Custom", "default value")
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
-		if expected, actual := req.Header.Get("X-Custom"), "custom value 123"; expected != actual {
+		if expected, actual := "custom value 123", req.Header.Get("X-Custom"); expected != actual {
 			t.Errorf("expected value %v but got %v", expected, actual)
 		}
 		w.WriteHeader(http.StatusOK)
@@ -481,7 +481,7 @@ func TestValidCaseSimpleRawStringVar(t *testing.T) {
 		t.Error(e)
 	}
 
-	if expected, actual := c.r.GetVariable("body"), "Hello this is plain text"; expected != actual {
+	if expected, actual := "Hello this is plain text", c.r.GetVariable("body"); expected != actual {
 		t.Errorf("expected value %v but got %v", expected, actual)
 	}
 }
@@ -538,7 +538,7 @@ func TestValidCaseSimpleRawRegexpVars(t *testing.T) {
 		t.Error(e)
 	}
 
-	if expected, actual := c.r.GetVariable("counter"), "1234"; expected != actual {
+	if expected, actual := "1234", c.r.GetVariable("counter"); expected != actual {
 		t.Errorf("expected value %v but got %v", expected, actual)
 	}
 }
@@ -768,7 +768,7 @@ func TestValidCaseAdvancedRegisterVariable(t *testing.T) {
 		t.Error(e)
 	}
 
-	if expected, actual := c.r.GetVariable("stats"), "high"; expected != actual {
+	if expected, actual := "high", c.r.GetVariable("stats"); expected != actual {
 		t.Errorf("expected value %v but got %v", expected, actual)
 	}
 }
@@ -1106,11 +1106,11 @@ func TestValidCaseAdvancedRegexpVars(t *testing.T) {
 		t.Error(e)
 	}
 
-	if expected, actual := c.r.GetVariable("first"), "Hello"; expected != actual {
+	if expected, actual := "Hello", c.r.GetVariable("first"); expected != actual {
 		t.Errorf("expected value %v but got %v, ", expected, actual)
 	}
 
-	if expected, actual := c.r.GetVariable("second"), "World"; expected != actual {
+	if expected, actual := "World", c.r.GetVariable("second"); expected != actual {
 		t.Errorf("expected value %v but got %v, ", expected, actual)
 	}
 }
@@ -1142,7 +1142,7 @@ func TestValidCaseAdvancedRegexpVarsOnlyFullMatch(t *testing.T) {
 		t.Error(e)
 	}
 
-	if expected, actual := c.r.GetVariable("full"), "--header--content--footer--"; expected != actual {
+	if expected, actual := "--header--content--footer--", c.r.GetVariable("full"); expected != actual {
 		t.Errorf("expected value %v but got %v", expected, actual)
 	}
 }
