@@ -61,8 +61,9 @@ func DefaultFailFunction(err error) {
 }
 
 // Rehapt - REST HTTP API Test
+//
 // This is the main structure of the library.
-// You can build it using the `NewRehapt()` function.
+// You can build it using the NewRehapt() function.
 type Rehapt struct {
 	httpHandler            http.Handler
 	marshaler              func(v interface{}) ([]byte, error)
@@ -73,9 +74,9 @@ type Rehapt struct {
 	defaultTimeDeltaFormat string
 }
 
-// NewRehapt build a new Rehapt instance from the given http.Handler
+// NewRehapt build a new Rehapt instance from the given http.Handler.
 // `handler` must be your server global handler. For example it could be
-// a simple `http.NewServeMux()` or an complex third-party library mux
+// a simple http.NewServeMux() or an complex third-party library mux
 func NewRehapt(handler http.Handler) *Rehapt {
 	return &Rehapt{
 		httpHandler:            handler,
@@ -94,19 +95,19 @@ func (r *Rehapt) SetHttpHandler(handler http.Handler) {
 }
 
 // SetMarshaler allow to change the marshaling function used to encode requests body.
-// The default marshaler is `json.Marshal`
+// The default marshaler is json.Marshal
 func (r *Rehapt) SetMarshaler(marshaler func(v interface{}) ([]byte, error)) {
 	r.marshaler = marshaler
 }
 
 // SetUnmarshaler allow to change the unmarshaling function used to decode requests response.
-// The default unmarshaler is `json.Unmarshal`
+// The default unmarshaler is json.Unmarshal
 func (r *Rehapt) SetUnmarshaler(unmarshaler func(data []byte, v interface{}) error) {
 	r.unmarshaler = unmarshaler
 }
 
 // SetFail allow to change the function called when TestAssert() encounter an error.
-// The default Fail callback is `DefaultFailFunction` which simply prints the error
+// The default Fail callback is DefaultFailFunction which simply prints the error
 func (r *Rehapt) SetFail(fail func(err error)) {
 	r.fail = fail
 }
@@ -146,9 +147,9 @@ func (r *Rehapt) SetDefaultHeader(name string, value string) {
 }
 
 // SetDefaultTimeDeltaFormat allow to change the default time format
-// It is used by `TimeDelta`, to parse the actual string value as a `time.Time`
-// Default is set to `time.RFC3339` which is ok for JSON.
-// This default format can be changed manually for each `TimeDelta`
+// It is used by TimeDelta, to parse the actual string value as a time.Time
+// Default is set to time.RFC3339 which is ok for JSON.
+// This default format can be changed manually for each TimeDelta
 func (r *Rehapt) SetDefaultTimeDeltaFormat(format string) {
 	r.defaultTimeDeltaFormat = format
 }
@@ -298,8 +299,8 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	return nil
 }
 
-// TestAssert works exactly like `Test` except it reports the error if not nil
-// using the fail callback function defined by `SetFail` (or default one)
+// TestAssert works exactly like Test except it reports the error if not nil
+// using the fail callback function defined by SetFail (or default one)
 func (r *Rehapt) TestAssert(testcase TestCase) {
 	if err := r.Test(testcase); err != nil {
 		if r.fail != nil {
