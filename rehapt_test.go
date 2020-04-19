@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	. "github.com/thib-ack/rehapt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 )
@@ -329,6 +331,38 @@ func TestValidCaseSimpleRequestBody(t *testing.T) {
 			Body: M{
 				"msg": "ok",
 			},
+		},
+		Response: TestResponse{
+			Code:   http.StatusAccepted,
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestValidCaseSimpleRequestRawBody(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if expected, actual := "This is a raw plain/text body", string(body); expected != actual {
+			t.Errorf("expected value %v but got %v", expected, actual)
+		}
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Raw:    strings.NewReader("This is a raw plain/text body"),
 		},
 		Response: TestResponse{
 			Code:   http.StatusAccepted,

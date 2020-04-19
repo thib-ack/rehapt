@@ -183,6 +183,10 @@ func (r *Rehapt) Test(testcase TestCase) error {
 			return fmt.Errorf("failed to marshal the testcase request body. %v", err)
 		}
 		body = bytes.NewBuffer(bodyData)
+
+	} else if testcase.Request.Raw != nil {
+		// If a raw body has been defined use it as-is
+		body = testcase.Request.Raw
 	}
 
 	// The path might contains a variable reference (like _xx_). we have to replace it.

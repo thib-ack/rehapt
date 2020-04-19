@@ -1,6 +1,7 @@
 package rehapt
 
 import (
+	"io"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type TestRequest struct {
 	Path    string
 	Headers H
 	Body    interface{}
+	Raw     io.Reader
 }
 
 // TestResponse declare the response expected
