@@ -602,6 +602,33 @@ func TestValidCaseSimpleAssert(t *testing.T) {
 	})
 }
 
+func TestValidCaseAdvancedIgnoreCode(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"stats": "ok"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: AnyCode,
+			Object: M{
+				"stats": "ok",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestValidCaseAdvancedIgnore(t *testing.T) {
 	c := setupTest(t)
 

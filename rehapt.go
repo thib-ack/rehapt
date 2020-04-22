@@ -212,9 +212,13 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	r.httpHandler.ServeHTTP(recorder, request)
 
 	// And start to check result.
+
 	// First check HTTP response code
-	if testcase.Response.Code != recorder.Code {
-		return fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, recorder.Code)
+	// Maybe we have to ignore this completely as requested by the user
+	if testcase.Response.Code != AnyCode {
+		if testcase.Response.Code != recorder.Code {
+			return fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, recorder.Code)
+		}
 	}
 
 	// Check headers, but not all of them. Only the ones expected by the user

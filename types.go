@@ -96,3 +96,6 @@ type any string
 
 // Any allow you to ignore completely the field
 const Any = any("{Any}")
+
+// AnyCode allow you to ignore completely the code
+const AnyCode = -1
