@@ -56,7 +56,7 @@ func TestExampleChained(t *testing.T) {
 				"age":  51,
 				"pets": S{ // S for slice, M for map. Easy right ?
 					M{
-						"id":   "$catid$",        // Note ! Here we dont compare but register the value returned here inside a variable named catid,
+						"id":   "$catid$",        // Note ! Here we don't compare but register the value returned here inside a variable named catid,
 						"name": "Pepper the cat", // this form is a shortcut. You could also use `StoreVar("catid")`
 						"type": "cat",
 					},

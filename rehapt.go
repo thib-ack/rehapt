@@ -72,6 +72,9 @@ type Rehapt struct {
 	defaultHeaders         map[string]string
 	variables              map[string]interface{}
 	defaultTimeDeltaFormat string
+	variableStoreRegexp    *regexp.Regexp
+	variableLoadRegexp     *regexp.Regexp
+	variableNameRegexp     *regexp.Regexp
 }
 
 // NewRehapt build a new Rehapt instance from the given http.Handler.
@@ -86,6 +89,9 @@ func NewRehapt(handler http.Handler) *Rehapt {
 		defaultHeaders:         make(map[string]string),
 		variables:              make(map[string]interface{}),
 		defaultTimeDeltaFormat: time.RFC3339,
+		variableStoreRegexp:    regexp.MustCompile(`^\$([a-zA-Z0-9]+)\$$`),
+		variableLoadRegexp:     regexp.MustCompile(`_[a-zA-Z0-9]+_`),
+		variableNameRegexp:     regexp.MustCompile(`^[a-zA-Z0-9]+$`),
 	}
 }
 
@@ -261,6 +267,9 @@ func (r *Rehapt) Test(testcase TestCase) error {
 				if groupid >= len(elements) {
 					return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
 				}
+				if r.validVarname(varname) == false {
+					return fmt.Errorf("invalid variable name %v for group %d", varname, groupid)
+				}
 				r.storeIfVariable("$"+varname+"$", elements[groupid])
 			}
 			return nil
@@ -317,11 +326,12 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 	}
 }
 
-var variableStoreRegexp = regexp.MustCompile(`^\$([a-zA-Z0-9]+)\$$`)
-var variableLoadRegexp = regexp.MustCompile(`_[a-zA-Z0-9]+_`)
+func (r *Rehapt) validVarname(name string) bool {
+	return r.variableNameRegexp.MatchString(name)
+}
 
 func (r *Rehapt) replaceVars(str string) string {
-	return variableLoadRegexp.ReplaceAllStringFunc(str, func(name string) string {
+	return r.variableLoadRegexp.ReplaceAllStringFunc(str, func(name string) string {
 		// Remove the '_' prefix and suffix to get only the variable name
 		varname := name[1 : len(name)-1]
 		if value, ok := r.variables[varname]; ok == true {
@@ -334,7 +344,7 @@ func (r *Rehapt) replaceVars(str string) string {
 }
 
 func (r *Rehapt) storeIfVariable(expected string, actual string) bool {
-	elements := variableStoreRegexp.FindStringSubmatch(expected)
+	elements := r.variableStoreRegexp.FindStringSubmatch(expected)
 	if len(elements) > 1 {
 		// index 0 is the full match.
 		// index 1 is the first group, our variable name without the '_' prefix and suffix
@@ -444,7 +454,10 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 				if groupid >= len(elements) {
 					return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
 				}
-				r.storeIfVariable("$"+varname+"$", elements[groupid])
+				if r.validVarname(varname) == false {
+					return fmt.Errorf("invalid variable name %v at index %d", varname, groupid)
+				}
+				r.SetVariable(varname, elements[groupid])
 			}
 			return nil
 		}
@@ -548,8 +561,8 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 		expectedStr := expectedValue.String()
 
 		if expectedType == reflect.TypeOf(StoreVar("")) {
-			// Compare actual with the loaded value
-			r.variables[expectedStr] = actual
+			// Don't compare but store the actual value using the expectedStr as variable name
+			r.SetVariable(expectedStr, actual)
 			return nil
 		}
 
