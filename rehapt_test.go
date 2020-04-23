@@ -834,6 +834,42 @@ func TestValidCaseAdvancedRegisterVariable(t *testing.T) {
 	}
 }
 
+func TestValidCaseAdvancedRegisterVariableChangedBounds(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": "high"}`)
+	})
+
+	err := c.r.SetStoreShortcutBounds("(", ")")
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"stats": "(stats)",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	if expected, actual := "high", c.r.GetVariable("stats"); expected != actual {
+		t.Errorf("expected value %v but got %v", expected, actual)
+	}
+}
+
 func TestValidCaseAdvancedUseVariable(t *testing.T) {
 	c := setupTest(t)
 
@@ -848,6 +884,40 @@ func TestValidCaseAdvancedUseVariable(t *testing.T) {
 		Request: TestRequest{
 			Method: "GET",
 			Path:   "/api/test/_id_",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"status": "ok",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestValidCaseAdvancedUseVariableChangedBounds(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "ok"}`)
+	})
+
+	c.r.SetVariable("id", "123")
+
+	err := c.r.SetLoadShortcutBounds("[", "]")
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test/[id]",
 			Body:   nil,
 		},
 		Response: TestResponse{
@@ -1988,6 +2058,44 @@ func TestInvalidCaseIncorrectTimeDeltaAfter(t *testing.T) {
 	})
 
 	if e := ExpectError(err, `max difference between 2020-04-11 20:10:32 +0000 UTC and 2020-04-11 20:10:30.123 +0000 UTC allowed is 1s, but difference was 1.877s`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestValidCaseAdvancedRegisterVariableInvalidBounds(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": "high"}`)
+	})
+
+	err := c.r.SetStoreShortcutBounds("", ")")
+	if e := ExpectError(err, `invalid prefix, cannot be empty`); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.SetStoreShortcutBounds("(", "")
+	if e := ExpectError(err, `invalid suffix, cannot be empty`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestValidCaseAdvancedLoadVariableInvalidBounds(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": "high"}`)
+	})
+
+	err := c.r.SetLoadShortcutBounds("", ")")
+	if e := ExpectError(err, `invalid prefix, cannot be empty`); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.SetLoadShortcutBounds("(", "")
+	if e := ExpectError(err, `invalid suffix, cannot be empty`); e != "" {
 		t.Error(e)
 	}
 }

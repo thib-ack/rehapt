@@ -160,6 +160,46 @@ func (r *Rehapt) SetDefaultTimeDeltaFormat(format string) {
 	r.defaultTimeDeltaFormat = format
 }
 
+// SetStoreShortcutBounds modify the strings used as prefix and suffix to identify
+// a shortcut version of the store variable operation. The default prefix and suffix is "$" which makes
+// the default shortcut form like "$myvar$".
+func (r *Rehapt) SetStoreShortcutBounds(prefix string, suffix string) error {
+	if prefix == "" {
+		return fmt.Errorf("invalid prefix, cannot be empty")
+	}
+	if suffix == "" {
+		return fmt.Errorf("invalid suffix, cannot be empty")
+	}
+	prefixEscaped := regexp.QuoteMeta(prefix)
+	suffixEscaped := regexp.QuoteMeta(suffix)
+	re, err := regexp.Compile(`^` + prefixEscaped + `([a-zA-Z0-9]+)` + suffixEscaped + `$`)
+	if err != nil {
+		return err
+	}
+	r.variableStoreRegexp = re
+	return nil
+}
+
+// SetLoadShortcutBounds modify the strings used as prefix and suffix to identify
+// a shortcut version of the load variable operation. The default prefix and suffix is "_" which makes
+// the default shortcut form like "_myvar_".
+func (r *Rehapt) SetLoadShortcutBounds(prefix string, suffix string) error {
+	if prefix == "" {
+		return fmt.Errorf("invalid prefix, cannot be empty")
+	}
+	if suffix == "" {
+		return fmt.Errorf("invalid suffix, cannot be empty")
+	}
+	prefixEscaped := regexp.QuoteMeta(prefix)
+	suffixEscaped := regexp.QuoteMeta(suffix)
+	re, err := regexp.Compile(prefixEscaped + `([a-zA-Z0-9]+)` + suffixEscaped)
+	if err != nil {
+		return err
+	}
+	r.variableLoadRegexp = re
+	return nil
+}
+
 // Test is the main function of the library
 // it executes a given TestCase, i.e. do the request and
 // check if the actual response is matching the expected response
