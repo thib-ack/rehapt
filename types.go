@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-// TestCase is the base type supported to declare a test.
+// TestCase is the base type supported to describe a test.
 // It is the object taken as parameters in Test() and TestAssert()
 type TestCase struct {
 	Request  TestRequest
 	Response TestResponse
 }
 
-// TestRequest declare the request to be executed
+// TestRequest describe the request to be executed
 type TestRequest struct {
 	Method  string
 	Path    string
@@ -21,7 +21,7 @@ type TestRequest struct {
 	Raw     io.Reader
 }
 
-// TestResponse declare the response expected
+// TestResponse describe the response expected
 type TestResponse struct {
 	Headers H
 	Code    int
@@ -97,5 +97,5 @@ type any string
 // Any allow you to ignore completely the field
 const Any = any("{Any}")
 
-// AnyCode allow you to ignore completely the code
+// AnyCode allow you to ignore completely the response code
 const AnyCode = -1
