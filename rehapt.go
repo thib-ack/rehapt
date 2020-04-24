@@ -51,6 +51,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -75,6 +76,7 @@ type Rehapt struct {
 	variableStoreRegexp    *regexp.Regexp
 	variableLoadRegexp     *regexp.Regexp
 	variableNameRegexp     *regexp.Regexp
+	floatPrecision         int
 }
 
 // NewRehapt build a new Rehapt instance from the given http.Handler.
@@ -90,8 +92,9 @@ func NewRehapt(handler http.Handler) *Rehapt {
 		variables:              make(map[string]interface{}),
 		defaultTimeDeltaFormat: time.RFC3339,
 		variableStoreRegexp:    regexp.MustCompile(`^\$([a-zA-Z0-9]+)\$$`),
-		variableLoadRegexp:     regexp.MustCompile(`_[a-zA-Z0-9]+_`),
+		variableLoadRegexp:     regexp.MustCompile(`_([a-zA-Z0-9]+)_`),
 		variableNameRegexp:     regexp.MustCompile(`^[a-zA-Z0-9]+$`),
+		floatPrecision:         -1,
 	}
 }
 
@@ -204,6 +207,13 @@ func (r *Rehapt) SetLoadShortcutBounds(prefix string, suffix string) error {
 	return nil
 }
 
+// SetLoadShortcutFloatPrecision change the precision of float formatting when
+// used with a load shortcut. For example "value is _myvar_" can be replaced by
+// "value is 10.50" or "value is 10.500000".
+func (r *Rehapt) SetLoadShortcutFloatPrecision(precision int) {
+	r.floatPrecision = precision
+}
+
 // Test is the main function of the library
 // it executes a given TestCase, i.e. do the request and
 // check if the actual response is matching the expected response
@@ -240,7 +250,11 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	}
 
 	// The path might contains a variable reference (like _xx_). we have to replace it.
-	testcase.Request.Path = r.replaceVars(testcase.Request.Path)
+	var err error
+	testcase.Request.Path, err = r.replaceVars(testcase.Request.Path)
+	if err != nil {
+		return fmt.Errorf("error while replacing variables in path. %v", err)
+	}
 
 	// Now start to build the HTTP request
 	request, err := http.NewRequest(testcase.Request.Method, testcase.Request.Path, body)
@@ -374,17 +388,83 @@ func (r *Rehapt) validVarname(name string) bool {
 	return r.variableNameRegexp.MatchString(name)
 }
 
-func (r *Rehapt) replaceVars(str string) string {
-	return r.variableLoadRegexp.ReplaceAllStringFunc(str, func(name string) string {
-		// Remove the '_' prefix and suffix to get only the variable name
-		varname := name[1 : len(name)-1]
-		if value, ok := r.variables[varname]; ok == true {
-			if str, ok := value.(string); ok == true {
-				return str
-			}
+func (r *Rehapt) replaceVars(str string) (string, error) {
+	matches := r.variableLoadRegexp.FindAllStringSubmatchIndex(str, -1)
+	if len(matches) == 0 {
+		return str, nil
+	}
+
+	replaced := make([]byte, 0, len(str)*2)
+	offset := 0
+	for _, match := range matches {
+		// Match should be 4 elements
+		// For example, "the _var_ move" should return [4, 9, 5, 8] :
+		//  0   45  89
+		// "the _var_ move"
+		// with the 4 indexes : [prefix start, suffix end, varname start, varname end]
+		if len(match) < 4 {
+			continue
 		}
-		return name
-	})
+		prefix := match[0]
+		suffix := match[1]
+		varnameStart := match[2]
+		varnameEnd := match[3]
+
+		// remove the prefix and suffix
+		varname := str[varnameStart:varnameEnd]
+		value := ""
+
+		// Make sure variable exists, or report error
+		ivalue, ok := r.variables[varname]
+		if ok == false {
+			return "", fmt.Errorf("variable %v does is not defined", varname)
+		}
+
+		// Try to convert value to string
+		switch ival := ivalue.(type) {
+		case string:
+			value = ival
+		case int:
+			value = strconv.FormatInt(int64(ival), 10)
+		case int8:
+			value = strconv.FormatInt(int64(ival), 10)
+		case int16:
+			value = strconv.FormatInt(int64(ival), 10)
+		case int32:
+			value = strconv.FormatInt(int64(ival), 10)
+		case int64:
+			value = strconv.FormatInt(ival, 10)
+		case uint:
+			value = strconv.FormatUint(uint64(ival), 10)
+		case uint8:
+			value = strconv.FormatUint(uint64(ival), 10)
+		case uint16:
+			value = strconv.FormatUint(uint64(ival), 10)
+		case uint32:
+			value = strconv.FormatUint(uint64(ival), 10)
+		case uint64:
+			value = strconv.FormatUint(ival, 10)
+		case float32:
+			value = strconv.FormatFloat(float64(ival), 'f', r.floatPrecision, 32)
+		case float64:
+			value = strconv.FormatFloat(ival, 'f', r.floatPrecision, 64)
+		case bool:
+			value = strconv.FormatBool(ival)
+		default:
+			return "", fmt.Errorf("variable %v of type %T cannot be using inside string", varname, ivalue)
+		}
+
+		replaced = append(replaced, str[offset:prefix]...)
+		replaced = append(replaced, value...)
+		offset = suffix
+	}
+
+	// Finish with end of str, if any
+	if offset < len(str) {
+		replaced = append(replaced, str[offset:]...)
+	}
+
+	return string(replaced), nil
 }
 
 func (r *Rehapt) storeIfVariable(expected string, actual interface{}) bool {
@@ -629,7 +709,11 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 		actualStr := actualValue.String()
 
 		// Make var replacement in case of
-		expectedStr = r.replaceVars(expectedStr)
+		var err error
+		expectedStr, err = r.replaceVars(expectedStr)
+		if err != nil {
+			return err
+		}
 
 		// If regexp, then process differently
 		if expectedType == reflect.TypeOf(Regexp("")) {

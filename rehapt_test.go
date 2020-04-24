@@ -1005,15 +1005,20 @@ func TestOKStoreVarShortcutChangedBounds(t *testing.T) {
 	}
 }
 
-func TestOKLoadVarShortcut(t *testing.T) {
+func TestOKLoadVarShortcutString(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "ok"}`)
+		fmt.Fprintf(w, `{"status": "value is ok !"}`)
 	})
 
 	err := c.r.SetVariable("id", "123")
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.SetVariable("status", "ok")
 	if e := ExpectNil(err); e != "" {
 		t.Error(e)
 	}
@@ -1027,7 +1032,149 @@ func TestOKLoadVarShortcut(t *testing.T) {
 		Response: TestResponse{
 			Code: http.StatusOK,
 			Object: M{
-				"status": "ok",
+				"status": "value is _status_ !",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKLoadVarShortcutInt(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "value is 100"}`)
+	})
+
+	values := []interface{}{
+		int(100), int8(100), int16(100), int32(100), int64(100),
+		uint(100), uint8(100), uint16(100), uint32(100), uint64(100),
+	}
+	for _, value := range values {
+		err := c.r.SetVariable("id", value)
+		if e := ExpectNil(err); e != "" {
+			t.Error(e)
+		}
+
+		err = c.r.Test(TestCase{
+			Request: TestRequest{
+				Method: "GET",
+				Path:   "/api/test/123",
+				Body:   nil,
+			},
+			Response: TestResponse{
+				Code: http.StatusOK,
+				Object: M{
+					"status": "value is _id_",
+				},
+			},
+		})
+
+		if e := ExpectNil(err); e != "" {
+			t.Error(e)
+		}
+	}
+}
+
+func TestOKLoadVarShortcutFloat(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "value is 100.5"}`)
+	})
+
+	values := []interface{}{float32(100.5), float64(100.5)}
+	for _, value := range values {
+		err := c.r.SetVariable("id", value)
+		if e := ExpectNil(err); e != "" {
+			t.Error(e)
+		}
+
+		err = c.r.Test(TestCase{
+			Request: TestRequest{
+				Method: "GET",
+				Path:   "/api/test/123",
+				Body:   nil,
+			},
+			Response: TestResponse{
+				Code: http.StatusOK,
+				Object: M{
+					"status": "value is _id_",
+				},
+			},
+		})
+
+		if e := ExpectNil(err); e != "" {
+			t.Error(e)
+		}
+	}
+}
+
+func TestOKLoadVarShortcutFloatWithPrecision(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "value is 100.500"}`)
+	})
+
+	c.r.SetLoadShortcutFloatPrecision(3)
+
+	values := []interface{}{float32(100.5), float64(100.5)}
+	for _, value := range values {
+		err := c.r.SetVariable("id", value)
+		if e := ExpectNil(err); e != "" {
+			t.Error(e)
+		}
+
+		err = c.r.Test(TestCase{
+			Request: TestRequest{
+				Method: "GET",
+				Path:   "/api/test/123",
+				Body:   nil,
+			},
+			Response: TestResponse{
+				Code: http.StatusOK,
+				Object: M{
+					"status": "value is _id_",
+				},
+			},
+		})
+
+		if e := ExpectNil(err); e != "" {
+			t.Error(e)
+		}
+	}
+}
+
+func TestOKLoadVarShortcutBool(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "value is true"}`)
+	})
+
+	err := c.r.SetVariable("id", true)
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test/123",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"status": "value is _id_",
 			},
 		},
 	})
@@ -2321,6 +2468,92 @@ func TestErrLoadVarInvalidBounds(t *testing.T) {
 
 	err = c.r.SetLoadShortcutBounds("(", "")
 	if e := ExpectError(err, `invalid suffix, cannot be empty`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrLoadVarShortcutUnknownVariable(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "status is ok"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"status": "status is _unknownvar_",
+			},
+		},
+	})
+
+	if e := ExpectError(err, `map element [status] does not match. variable unknownvar does is not defined`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrLoadVarShortcutUnknownVariableInPath(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "status is ok"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test/_unknown_",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"status": "status is ok",
+			},
+		},
+	})
+
+	if e := ExpectError(err, `error while replacing variables in path. variable unknown does is not defined`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrLoadVarShortcutInvalidVariableType(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"status": "status is ok"}`)
+	})
+
+	err := c.r.SetVariable("var", M{"hello": "world"})
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"status": "status is _var_",
+			},
+		},
+	})
+
+	if e := ExpectError(err, `map element [status] does not match. variable var of type rehapt.M cannot be using inside string`); e != "" {
 		t.Error(e)
 	}
 }
