@@ -55,7 +55,7 @@ func ExpectNil(err error) string {
 // Now finally our tests
 // Begin with valid cases
 
-func TestValidCaseSimpleString(t *testing.T) {
+func TestOKStringResponseObject(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -80,7 +80,7 @@ func TestValidCaseSimpleString(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleBool(t *testing.T) {
+func TestOKBoolResponseObject(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -105,7 +105,7 @@ func TestValidCaseSimpleBool(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleInt(t *testing.T) {
+func TestOKIntResponseObject(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -178,7 +178,7 @@ func TestValidCaseSimpleInt(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleFloat(t *testing.T) {
+func TestOKFloatResponseObject(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -251,7 +251,7 @@ func TestValidCaseSimpleFloat(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleMap(t *testing.T) {
+func TestOKMapResponseObject(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -279,7 +279,34 @@ func TestValidCaseSimpleMap(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleSlice(t *testing.T) {
+func TestOKPartialMapResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"name": "John", "Age": 51}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: PartialM{
+				"name": "John",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKSliceResponseObject(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -308,7 +335,36 @@ func TestValidCaseSimpleSlice(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleRequestBody(t *testing.T) {
+func TestOKUnsortedSliceResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `["John", "Doe", 99]`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: UnsortedS{
+				"Doe",
+				99,
+				"John",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKRequestObjectBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -343,7 +399,7 @@ func TestValidCaseSimpleRequestBody(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleRequestRawBody(t *testing.T) {
+func TestOKRequestRawBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -375,10 +431,16 @@ func TestValidCaseSimpleRequestRawBody(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleRequestDefaultHeader(t *testing.T) {
+func TestOKDefaultRequestHeader(t *testing.T) {
 	c := setupTest(t)
 
+	// Set the default header (will be set for all requests)
 	c.r.SetDefaultHeader("X-Custom", "custom value 123")
+
+	// We can check its value too
+	if actual, expected := c.r.GetDefaultHeader("X-Custom"), "custom value 123"; actual != expected {
+		t.Errorf("expected value %v but got %v", expected, actual)
+	}
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		if expected, actual := "custom value 123", req.Header.Get("X-Custom"); expected != actual {
@@ -402,15 +464,12 @@ func TestValidCaseSimpleRequestDefaultHeader(t *testing.T) {
 	if e := ExpectNil(err); e != "" {
 		t.Error(e)
 	}
-
-	if actual, expected := c.r.GetDefaultHeader("X-Custom"), "custom value 123"; actual != expected {
-		t.Errorf("expected value %v but got %v", expected, actual)
-	}
 }
 
-func TestValidCaseSimpleRequestHeader(t *testing.T) {
+func TestOKRequestHeader(t *testing.T) {
 	c := setupTest(t)
 
+	// We set a default header, but it will be overloaded by the request one
 	c.r.SetDefaultHeader("X-Custom", "default value")
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -438,7 +497,7 @@ func TestValidCaseSimpleRequestHeader(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleResponseHeader(t *testing.T) {
+func TestOKResponseHeader(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -466,7 +525,7 @@ func TestValidCaseSimpleResponseHeader(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleRawString(t *testing.T) {
+func TestOKResponseRawStringBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -491,7 +550,7 @@ func TestValidCaseSimpleRawString(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleRawStringVar(t *testing.T) {
+func TestOKResponseRawStoreVarShortcutBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -520,7 +579,7 @@ func TestValidCaseSimpleRawStringVar(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleRawRegexp(t *testing.T) {
+func TestOKResponseRawRegexpBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -545,7 +604,7 @@ func TestValidCaseSimpleRawRegexp(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleRawRegexpVars(t *testing.T) {
+func TestOKResponseRawRegexpVarsBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -577,7 +636,7 @@ func TestValidCaseSimpleRawRegexpVars(t *testing.T) {
 	}
 }
 
-func TestValidCaseSimpleAssert(t *testing.T) {
+func TestOKTestAssert(t *testing.T) {
 	c := setupTest(t)
 
 	c.r.SetFail(func(err error) {
@@ -602,7 +661,7 @@ func TestValidCaseSimpleAssert(t *testing.T) {
 	})
 }
 
-func TestValidCaseAdvancedIgnoreCode(t *testing.T) {
+func TestOKIgnoreResponseCode(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -629,7 +688,7 @@ func TestValidCaseAdvancedIgnoreCode(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedIgnore(t *testing.T) {
+func TestOKIgnoreMapValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -656,7 +715,32 @@ func TestValidCaseAdvancedIgnore(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedStoreVarString(t *testing.T) {
+func TestOKIgnoreResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Any,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKStoreVarStringValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -687,7 +771,7 @@ func TestValidCaseAdvancedStoreVarString(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedStoreVarNumber(t *testing.T) {
+func TestOKStoreVarNumberValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -718,7 +802,7 @@ func TestValidCaseAdvancedStoreVarNumber(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedLoadVarString(t *testing.T) {
+func TestOKLoadVarStringValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -750,7 +834,7 @@ func TestValidCaseAdvancedLoadVarString(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedLoadVarNumber(t *testing.T) {
+func TestOKLoadVarNumberValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -782,7 +866,7 @@ func TestValidCaseAdvancedLoadVarNumber(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedGetVariableUnknown(t *testing.T) {
+func TestOKGetVariableUnknown(t *testing.T) {
 	c := setupTest(t)
 
 	valueStr := c.r.GetVariableString("myvar")
@@ -796,7 +880,7 @@ func TestValidCaseAdvancedGetVariableUnknown(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedRegexp(t *testing.T) {
+func TestOKRegexp(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -823,7 +907,7 @@ func TestValidCaseAdvancedRegexp(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedRegisterVariable(t *testing.T) {
+func TestOKStoreVarShortcutStringValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -854,7 +938,38 @@ func TestValidCaseAdvancedRegisterVariable(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedRegisterVariableChangedBounds(t *testing.T) {
+func TestOKStoreVarShortcutNumberValue(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": 1580}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"stats": "$stats$",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	if expected, actual := float64(1580), c.r.GetVariable("stats"); expected != actual {
+		t.Errorf("expected value %v but got %v", expected, actual)
+	}
+}
+
+func TestOKStoreVarShortcutChangedBounds(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -890,7 +1005,7 @@ func TestValidCaseAdvancedRegisterVariableChangedBounds(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedUseVariable(t *testing.T) {
+func TestOKLoadVarShortcut(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
@@ -922,7 +1037,7 @@ func TestValidCaseAdvancedUseVariable(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedUseVariableChangedBounds(t *testing.T) {
+func TestOKLoadVarShortcutChangedBounds(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
@@ -959,57 +1074,7 @@ func TestValidCaseAdvancedUseVariableChangedBounds(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedPartialMap(t *testing.T) {
-	c := setupTest(t)
-
-	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"A": 1, "B": 2, "C": 3}`)
-	})
-
-	err := c.r.Test(TestCase{
-		Request: TestRequest{
-			Method: "GET",
-			Path:   "/api/test",
-			Body:   nil,
-		},
-		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: PartialM{"A": 1},
-		},
-	})
-
-	if e := ExpectNil(err); e != "" {
-		t.Error(e)
-	}
-}
-
-func TestValidCaseAdvancedUnsortedSlice(t *testing.T) {
-	c := setupTest(t)
-
-	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["A", "B", "C"]`)
-	})
-
-	err := c.r.Test(TestCase{
-		Request: TestRequest{
-			Method: "GET",
-			Path:   "/api/test",
-			Body:   nil,
-		},
-		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: UnsortedS{"B", "C", "A"},
-		},
-	})
-
-	if e := ExpectNil(err); e != "" {
-		t.Error(e)
-	}
-}
-
-func TestValidCaseAdvancedNumberDeltaExact(t *testing.T) {
+func TestOKNumberDeltaExactValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1037,7 +1102,7 @@ func TestValidCaseAdvancedNumberDeltaExact(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedNumberDeltaLower(t *testing.T) {
+func TestOKNumberDeltaLowerValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1065,7 +1130,7 @@ func TestValidCaseAdvancedNumberDeltaLower(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedNumberDeltaGreater(t *testing.T) {
+func TestOKNumberDeltaGreaterValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1093,7 +1158,7 @@ func TestValidCaseAdvancedNumberDeltaGreater(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedTimeDeltaExact(t *testing.T) {
+func TestOKTimeDeltaExactValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1121,7 +1186,7 @@ func TestValidCaseAdvancedTimeDeltaExact(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedTimeDeltaBefore(t *testing.T) {
+func TestOKTimeDeltaBeforeValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1149,7 +1214,7 @@ func TestValidCaseAdvancedTimeDeltaBefore(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedTimeDeltaAfter(t *testing.T) {
+func TestOKTimeDeltaAfterValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1177,7 +1242,7 @@ func TestValidCaseAdvancedTimeDeltaAfter(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedTimeDeltaCustomDefaultFormat(t *testing.T) {
+func TestOKTimeDeltaDefaultFormat(t *testing.T) {
 	c := setupTest(t)
 
 	c.r.SetDefaultTimeDeltaFormat("Day 2006-01-02 Hour 15:04:05Z07:00")
@@ -1207,7 +1272,7 @@ func TestValidCaseAdvancedTimeDeltaCustomDefaultFormat(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedTimeDeltaCustomFormat(t *testing.T) {
+func TestOKTimeDeltaFormat(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1236,7 +1301,7 @@ func TestValidCaseAdvancedTimeDeltaCustomFormat(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedRegexpVars(t *testing.T) {
+func TestOKRegexpVars(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1272,7 +1337,7 @@ func TestValidCaseAdvancedRegexpVars(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedRegexpVarsOnlyFullMatch(t *testing.T) {
+func TestOKRegexpVarsOnlyFullMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1306,7 +1371,7 @@ func TestValidCaseAdvancedRegexpVarsOnlyFullMatch(t *testing.T) {
 
 // And now invalid cases
 
-func TestInvalidCaseNilMarshaler(t *testing.T) {
+func TestErrNilMarshaler(t *testing.T) {
 	c := setupTest(t)
 
 	c.r.SetMarshaler(nil)
@@ -1328,7 +1393,7 @@ func TestInvalidCaseNilMarshaler(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseNilUnmarshaler(t *testing.T) {
+func TestErrNilUnmarshaler(t *testing.T) {
 	c := setupTest(t)
 
 	c.r.SetUnmarshaler(nil)
@@ -1350,7 +1415,7 @@ func TestInvalidCaseNilUnmarshaler(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseNilHTTPHandler(t *testing.T) {
+func TestErrNilHTTPHandler(t *testing.T) {
 	c := setupTest(t)
 
 	c.r.SetHttpHandler(nil)
@@ -1372,7 +1437,7 @@ func TestInvalidCaseNilHTTPHandler(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseMissingHTTPMethod(t *testing.T) {
+func TestErrMissingHTTPMethod(t *testing.T) {
 	c := setupTest(t)
 
 	err := c.r.Test(TestCase{
@@ -1392,7 +1457,7 @@ func TestInvalidCaseMissingHTTPMethod(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseInvalidHTTPMethod(t *testing.T) {
+func TestErrInvalidHTTPMethod(t *testing.T) {
 	c := setupTest(t)
 
 	err := c.r.Test(TestCase{
@@ -1412,7 +1477,7 @@ func TestInvalidCaseInvalidHTTPMethod(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseMissingURLPath(t *testing.T) {
+func TestErrMissingURLPath(t *testing.T) {
 	c := setupTest(t)
 
 	err := c.r.Test(TestCase{
@@ -1432,7 +1497,7 @@ func TestInvalidCaseMissingURLPath(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseCannotMarshalRequestBody(t *testing.T) {
+func TestErrMarshalRequestBody(t *testing.T) {
 	c := setupTest(t)
 
 	err := c.r.Test(TestCase{
@@ -1452,7 +1517,7 @@ func TestInvalidCaseCannotMarshalRequestBody(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectHTTPCode(t *testing.T) {
+func TestErrResponseCode(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1476,7 +1541,7 @@ func TestInvalidCaseIncorrectHTTPCode(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseAssert(t *testing.T) {
+func TestErrTestAssertCallFailFunction(t *testing.T) {
 	c := setupTest(t)
 
 	called := false
@@ -1506,32 +1571,7 @@ func TestInvalidCaseAssert(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectObjectString(t *testing.T) {
-	c := setupTest(t)
-
-	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"ok"`)
-	})
-
-	err := c.r.Test(TestCase{
-		Request: TestRequest{
-			Method: "GET",
-			Path:   "/api/test",
-			Body:   nil,
-		},
-		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: "nok",
-		},
-	})
-
-	if e := ExpectError(err, `strings does not match. Expected 'nok', got 'ok'`); e != "" {
-		t.Error(e)
-	}
-}
-
-func TestInvalidCaseIncorrectType(t *testing.T) {
+func TestErrResponseBodyType(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/string", func(w http.ResponseWriter, req *http.Request) {
@@ -1558,8 +1598,6 @@ func TestInvalidCaseIncorrectType(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, `["ok"]`)
 	})
-
-	type unexportedStruct struct{}
 
 	tests := []struct {
 		Path   string
@@ -1639,7 +1677,132 @@ func TestInvalidCaseIncorrectType(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseBody(t *testing.T) {
+func TestErrStringResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `"ok"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: "nok",
+		},
+	})
+
+	if e := ExpectError(err, `strings does not match. Expected 'nok', got 'ok'`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrBoolResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `true`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: false,
+		},
+	})
+
+	if e := ExpectError(err, `bools does not match. Expected false, got true`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrIntResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `100`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: 150,
+		},
+	})
+
+	if e := ExpectError(err, `floats does not match. Expected 150, got 100`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrUintResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `100`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: uint(150),
+		},
+	})
+
+	if e := ExpectError(err, `floats does not match. Expected 150, got 100`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrFloatResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `100.0`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: 100.5,
+		},
+	})
+
+	if e := ExpectError(err, `floats does not match. Expected 100.5, got 100`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrUnmarshalResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1665,7 +1828,7 @@ func TestInvalidCaseIncorrectResponseBody(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseHeader(t *testing.T) {
+func TestErrResponseHeader(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1693,7 +1856,7 @@ func TestInvalidCaseIncorrectResponseHeader(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseNilResponseBody(t *testing.T) {
+func TestErrNilResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1717,7 +1880,7 @@ func TestInvalidCaseNilResponseBody(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseResponseBodyExpectedNil(t *testing.T) {
+func TestErrResponseBodyExpectedNil(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1742,7 +1905,7 @@ func TestInvalidCaseResponseBodyExpectedNil(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseSliceDifferentSize(t *testing.T) {
+func TestErrSliceDifferentSize(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1767,7 +1930,7 @@ func TestInvalidCaseIncorrectResponseSliceDifferentSize(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseSliceElementDoesNotMatch(t *testing.T) {
+func TestErrSliceElementDoesNotMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1792,7 +1955,7 @@ func TestInvalidCaseIncorrectResponseSliceElementDoesNotMatch(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseMapDifferentKeyType(t *testing.T) {
+func TestErrMapDifferentKeyType(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1817,7 +1980,7 @@ func TestInvalidCaseIncorrectResponseMapDifferentKeyType(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseMapDifferentSize(t *testing.T) {
+func TestErrMapDifferentSize(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1842,7 +2005,7 @@ func TestInvalidCaseIncorrectResponseMapDifferentSize(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseMapKeyNotFound(t *testing.T) {
+func TestErrMapKeyNotFound(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1867,7 +2030,7 @@ func TestInvalidCaseIncorrectResponseMapKeyNotFound(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectResponseMapElementDoesNotMatch(t *testing.T) {
+func TestErrMapElementDoesNotMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1892,7 +2055,7 @@ func TestInvalidCaseIncorrectResponseMapElementDoesNotMatch(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectNumberDeltaNotNumber(t *testing.T) {
+func TestErrNumberDeltaNotNumber(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1920,7 +2083,7 @@ func TestInvalidCaseIncorrectNumberDeltaNotNumber(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectNumberDeltaLower(t *testing.T) {
+func TestErrNumberDeltaLowerValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1948,7 +2111,7 @@ func TestInvalidCaseIncorrectNumberDeltaLower(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectNumberDeltaGreater(t *testing.T) {
+func TestErrNumberDeltaGreaterValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1976,7 +2139,7 @@ func TestInvalidCaseIncorrectNumberDeltaGreater(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectTimeDeltaNotString(t *testing.T) {
+func TestErrTimeDeltaNotString(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2004,7 +2167,7 @@ func TestInvalidCaseIncorrectTimeDeltaNotString(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectTimeDeltaNotTime(t *testing.T) {
+func TestErrTimeDeltaNotTime(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2032,7 +2195,7 @@ func TestInvalidCaseIncorrectTimeDeltaNotTime(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectTimeDeltaBefore(t *testing.T) {
+func TestErrTimeDeltaBeforeValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2060,7 +2223,7 @@ func TestInvalidCaseIncorrectTimeDeltaBefore(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseIncorrectTimeDeltaAfter(t *testing.T) {
+func TestErrTimeDeltaAfterValue(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2088,7 +2251,7 @@ func TestInvalidCaseIncorrectTimeDeltaAfter(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseAdvancedSetVariableInvalidVarname(t *testing.T) {
+func TestErrSetVariableInvalidVarname(t *testing.T) {
 	c := setupTest(t)
 
 	err := c.r.SetVariable("my var", "value")
@@ -2097,7 +2260,7 @@ func TestInvalidCaseAdvancedSetVariableInvalidVarname(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseAdvancedStoreVarInvalidVarname(t *testing.T) {
+func TestErrStoreVarInvalidVarname(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2124,7 +2287,7 @@ func TestInvalidCaseAdvancedStoreVarInvalidVarname(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseAdvancedStoreVarInvalidBounds(t *testing.T) {
+func TestErrStoreVarInvalidBounds(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2143,7 +2306,7 @@ func TestInvalidCaseAdvancedStoreVarInvalidBounds(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseAdvancedLoadVarInvalidBounds(t *testing.T) {
+func TestErrLoadVarInvalidBounds(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2162,7 +2325,7 @@ func TestInvalidCaseAdvancedLoadVarInvalidBounds(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseUnsortedSliceElementNotFound(t *testing.T) {
+func TestErrUnsortedSliceElementNotFound(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2187,7 +2350,7 @@ func TestInvalidCaseUnsortedSliceElementNotFound(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRegexpFailParsing(t *testing.T) {
+func TestErrRegexpFailParsing(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2214,7 +2377,7 @@ func TestInvalidCaseRegexpFailParsing(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRegexpDoesNotMatch(t *testing.T) {
+func TestErrRegexpDoesNotMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2241,32 +2404,7 @@ func TestInvalidCaseRegexpDoesNotMatch(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseBoolDoesNotMatch(t *testing.T) {
-	c := setupTest(t)
-
-	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `true`)
-	})
-
-	err := c.r.Test(TestCase{
-		Request: TestRequest{
-			Method: "GET",
-			Path:   "/api/test",
-			Body:   nil,
-		},
-		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: false,
-		},
-	})
-
-	if e := ExpectError(err, `bools does not match. Expected false, got true`); e != "" {
-		t.Error(e)
-	}
-}
-
-func TestInvalidCaseRegexpVarsNotString(t *testing.T) {
+func TestErrRegexpVarsNotString(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2294,7 +2432,7 @@ func TestInvalidCaseRegexpVarsNotString(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRegexpVarsFailParsing(t *testing.T) {
+func TestErrRegexpVarsFailParsing(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2324,7 +2462,7 @@ func TestInvalidCaseRegexpVarsFailParsing(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRegexpVarsDoesNotMatch(t *testing.T) {
+func TestErrRegexpVarsDoesNotMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2354,7 +2492,7 @@ func TestInvalidCaseRegexpVarsDoesNotMatch(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRegexpVarsDoesInvalidVarname(t *testing.T) {
+func TestErrRegexpVarsDoesInvalidVarname(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2384,7 +2522,7 @@ func TestInvalidCaseRegexpVarsDoesInvalidVarname(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRegexpVarsOverflowIndexIgnored(t *testing.T) {
+func TestErrRegexpVarsOverflowIndexIgnored(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2414,7 +2552,7 @@ func TestInvalidCaseRegexpVarsOverflowIndexIgnored(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawUnhandled(t *testing.T) {
+func TestErrRawUnhandled(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2439,7 +2577,7 @@ func TestInvalidCaseRawUnhandled(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawStringDoesNotMatch(t *testing.T) {
+func TestErrRawStringDoesNotMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2464,7 +2602,7 @@ func TestInvalidCaseRawStringDoesNotMatch(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawRegexpFailParsing(t *testing.T) {
+func TestErrRawRegexpFailParsing(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2489,7 +2627,7 @@ func TestInvalidCaseRawRegexpFailParsing(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawRegexpDoesNotMatch(t *testing.T) {
+func TestErrRawRegexpDoesNotMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2514,7 +2652,7 @@ func TestInvalidCaseRawRegexpDoesNotMatch(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawRegexpVarsFailParsing(t *testing.T) {
+func TestErrRawRegexpVarsFailParsing(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2542,7 +2680,7 @@ func TestInvalidCaseRawRegexpVarsFailParsing(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawRegexpVarsDoesNotMatch(t *testing.T) {
+func TestErrRawRegexpVarsDoesNotMatch(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2570,7 +2708,7 @@ func TestInvalidCaseRawRegexpVarsDoesNotMatch(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawRegexpVarsInvalidVarname(t *testing.T) {
+func TestErrRawRegexpVarsInvalidVarname(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2598,7 +2736,7 @@ func TestInvalidCaseRawRegexpVarsInvalidVarname(t *testing.T) {
 	}
 }
 
-func TestInvalidCaseRawRegexpVarsOverflowIndex(t *testing.T) {
+func TestErrRawRegexpVarsOverflowIndex(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
