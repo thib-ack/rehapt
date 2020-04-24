@@ -387,7 +387,7 @@ func (r *Rehapt) replaceVars(str string) string {
 	})
 }
 
-func (r *Rehapt) storeIfVariable(expected string, actual string) bool {
+func (r *Rehapt) storeIfVariable(expected string, actual interface{}) bool {
 	elements := r.variableStoreRegexp.FindStringSubmatch(expected)
 	if len(elements) > 1 {
 		// index 0 is the full match.
@@ -617,16 +617,16 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 			return r.compare(value, actual)
 		}
 
+		if r.storeIfVariable(expectedStr, actual) == true {
+			// This was a variable store operation. no comparison to do
+			return nil
+		}
+
 		if actualKind != reflect.String {
 			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
 		}
 
 		actualStr := actualValue.String()
-
-		if r.storeIfVariable(expectedStr, actualStr) == true {
-			// This was a variable store operation. no comparison to do
-			return nil
-		}
 
 		// Make var replacement in case of
 		expectedStr = r.replaceVars(expectedStr)
