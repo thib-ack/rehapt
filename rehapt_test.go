@@ -726,9 +726,12 @@ func TestValidCaseAdvancedLoadVarString(t *testing.T) {
 		fmt.Fprintf(w, `{"stats": "value"}`)
 	})
 
-	c.r.SetVariable("myvar", "value")
+	err := c.r.SetVariable("myvar", "value")
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
 
-	err := c.r.Test(TestCase{
+	err = c.r.Test(TestCase{
 		Request: TestRequest{
 			Method: "GET",
 			Path:   "/api/test",
@@ -755,9 +758,12 @@ func TestValidCaseAdvancedLoadVarNumber(t *testing.T) {
 		fmt.Fprintf(w, `{"stats": 1580}`)
 	})
 
-	c.r.SetVariable("myvar", 1580)
+	err := c.r.SetVariable("myvar", 1580)
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
 
-	err := c.r.Test(TestCase{
+	err = c.r.Test(TestCase{
 		Request: TestRequest{
 			Method: "GET",
 			Path:   "/api/test",
@@ -773,6 +779,20 @@ func TestValidCaseAdvancedLoadVarNumber(t *testing.T) {
 
 	if e := ExpectNil(err); e != "" {
 		t.Error(e)
+	}
+}
+
+func TestValidCaseAdvancedGetVariableUnknown(t *testing.T) {
+	c := setupTest(t)
+
+	valueStr := c.r.GetVariableString("myvar")
+	if valueStr != "" {
+		t.Error("value should be empty")
+	}
+
+	value := c.r.GetVariable("myvar")
+	if value != nil {
+		t.Error("value should be nil")
 	}
 }
 
@@ -878,9 +898,12 @@ func TestValidCaseAdvancedUseVariable(t *testing.T) {
 		fmt.Fprintf(w, `{"status": "ok"}`)
 	})
 
-	c.r.SetVariable("id", "123")
+	err := c.r.SetVariable("id", "123")
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
 
-	err := c.r.Test(TestCase{
+	err = c.r.Test(TestCase{
 		Request: TestRequest{
 			Method: "GET",
 			Path:   "/api/test/_id_",
@@ -907,9 +930,12 @@ func TestValidCaseAdvancedUseVariableChangedBounds(t *testing.T) {
 		fmt.Fprintf(w, `{"status": "ok"}`)
 	})
 
-	c.r.SetVariable("id", "123")
+	err := c.r.SetVariable("id", "123")
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
 
-	err := c.r.SetLoadShortcutBounds("[", "]")
+	err = c.r.SetLoadShortcutBounds("[", "]")
 	if e := ExpectNil(err); e != "" {
 		t.Error(e)
 	}
@@ -2062,7 +2088,43 @@ func TestInvalidCaseIncorrectTimeDeltaAfter(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedRegisterVariableInvalidBounds(t *testing.T) {
+func TestInvalidCaseAdvancedSetVariableInvalidVarname(t *testing.T) {
+	c := setupTest(t)
+
+	err := c.r.SetVariable("my var", "value")
+	if e := ExpectError(err, `invalid variable name my var`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestInvalidCaseAdvancedStoreVarInvalidVarname(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": "high"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"stats": StoreVar("my var"),
+			},
+		},
+	})
+
+	if e := ExpectError(err, `map element [stats] does not match. invalid variable name my var`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestInvalidCaseAdvancedStoreVarInvalidBounds(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2081,7 +2143,7 @@ func TestValidCaseAdvancedRegisterVariableInvalidBounds(t *testing.T) {
 	}
 }
 
-func TestValidCaseAdvancedLoadVariableInvalidBounds(t *testing.T) {
+func TestInvalidCaseAdvancedLoadVarInvalidBounds(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2100,7 +2162,7 @@ func TestValidCaseAdvancedLoadVariableInvalidBounds(t *testing.T) {
 	}
 }
 
-func TestValidCaseUnsortedSliceElementNotFound(t *testing.T) {
+func TestInvalidCaseUnsortedSliceElementNotFound(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2292,6 +2354,36 @@ func TestInvalidCaseRegexpVarsDoesNotMatch(t *testing.T) {
 	}
 }
 
+func TestInvalidCaseRegexpVarsDoesInvalidVarname(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"stats": RegexpVars{
+					Regexp: `^[0-9]{3} - (.*) - end$`,
+					Vars:   map[int]string{1: "v 1"},
+				},
+			},
+		},
+	})
+
+	if e := ExpectError(err, `map element [stats] does not match. invalid variable name v 1`); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestInvalidCaseRegexpVarsOverflowIndexIgnored(t *testing.T) {
 	c := setupTest(t)
 
@@ -2474,6 +2566,34 @@ func TestInvalidCaseRawRegexpVarsDoesNotMatch(t *testing.T) {
 	})
 
 	if e := ExpectError(err, `regexp '^H[a-z ]+ ([0-9])$' does not match 'Hello this is plain text 1234'`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestInvalidCaseRawRegexpVarsInvalidVarname(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `Hello this is plain text 1234`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Raw: RegexpVars{
+				Regexp: `^H[a-z ]+ ([0-9]+)$`,
+				Vars:   map[int]string{1: "counter 1"},
+			},
+		},
+	})
+
+	if e := ExpectError(err, `invalid variable name counter 1 for group 1`); e != "" {
 		t.Error(e)
 	}
 }

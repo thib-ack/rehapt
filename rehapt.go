@@ -55,7 +55,7 @@ import (
 )
 
 // DefaultFailFunction is the default fonction called by
-// TestAssert in case of failure
+// TestAssert in case of failure. It simply fmt.Println() the error.
 func DefaultFailFunction(err error) {
 	fmt.Println("Error:", err)
 }
@@ -135,8 +135,12 @@ func (r *Rehapt) GetVariableString(name string) string {
 
 // SetVariable allow to define manually a variable.
 // Variable names are strings, however values can be any type
-func (r *Rehapt) SetVariable(name string, value interface{}) {
+func (r *Rehapt) SetVariable(name string, value interface{}) error {
+	if r.validVarname(name) == false {
+		return fmt.Errorf("invalid variable name %v", name)
+	}
 	r.variables[name] = value
+	return nil
 }
 
 // GetDefaultHeader returns the default request header value from its name.
@@ -494,10 +498,9 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 				if groupid >= len(elements) {
 					return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
 				}
-				if r.validVarname(varname) == false {
-					return fmt.Errorf("invalid variable name %v at index %d", varname, groupid)
+				if err := r.SetVariable(varname, elements[groupid]); err != nil {
+					return err
 				}
-				r.SetVariable(varname, elements[groupid])
 			}
 			return nil
 		}
@@ -602,13 +605,15 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 
 		if expectedType == reflect.TypeOf(StoreVar("")) {
 			// Don't compare but store the actual value using the expectedStr as variable name
-			r.SetVariable(expectedStr, actual)
+			if err := r.SetVariable(expectedStr, actual); err != nil {
+				return err
+			}
 			return nil
 		}
 
 		if expectedType == reflect.TypeOf(LoadVar("")) {
 			// Compare actual with the loaded value which might not be string
-			value := r.variables[expectedStr]
+			value := r.GetVariable(expectedStr)
 			return r.compare(value, actual)
 		}
 
