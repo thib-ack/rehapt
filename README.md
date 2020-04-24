@@ -1,5 +1,5 @@
 
-# rehapt <a href="https://travis-ci.org/thib-ack/rehapt"><img src="https://travis-ci.org/thib-ack/rehapt.svg?branch=master"></a> <a href="https://goreportcard.com/report/thib-ack/rehapt"><img src="http://goreportcard.com/badge/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
+# rehapt <a href="https://travis-ci.org/thib-ack/rehapt"><img src="https://travis-ci.org/thib-ack/rehapt.svg?branch=master"></a> <a href='https://coveralls.io/github/thib-ack/rehapt'><img src='https://coveralls.io/repos/github/thib-ack/rehapt/badge.svg' alt='Coverage Status' /></a> <a href="https://goreportcard.com/report/thib-ack/rehapt"><img src="http://goreportcard.com/badge/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
 
 Rehapt is a Golang declarative REST HTTP API testing library.
 You describe how you expect your HTTP API to behave and the library take care of comparing the expected and actual response elements.
