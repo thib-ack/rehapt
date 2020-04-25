@@ -49,7 +49,7 @@ import (
 )
 
 func TestAPISimple(t *testing.T) {
-    r := NewRehapt(yourHttpServerMux)
+    r := NewRehapt(t, yourHttpServerMux)
 
     // Each testcase consist of a description of the request to execute
     // and a description of the expected response
@@ -96,7 +96,7 @@ import (
 )
 
 func TestAPIAdvanced(t *testing.T) {
-    r := NewRehapt(yourHttpServerMux)
+    r := NewRehapt(t, yourHttpServerMux)
 
     r.TestAssert(TestCase{
         Request: TestRequest{
@@ -149,7 +149,7 @@ import (
 )
 
 func TestAPIVariables(t *testing.T) {
-    r := NewRehapt(yourHttpServerMux)
+    r := NewRehapt(t, yourHttpServerMux)
 
     r.TestAssert(TestCase{
         Request: TestRequest{

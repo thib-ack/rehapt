@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+// ErrorHandler is the interface used to report errors when found by TestAssert().
+// Note that *testing.T implements this interface
+type ErrorHandler interface {
+	Errorf(format string, args ...interface{})
+}
+
 // TestCase is the base type supported to describe a test.
 // It is the object taken as parameters in Test() and TestAssert()
 type TestCase struct {

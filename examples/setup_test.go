@@ -9,16 +9,9 @@ import (
 
 // We create our Rehapt instance with little customization for tests
 func setupRehapt(t *testing.T) *rehapt.Rehapt {
-	r := rehapt.NewRehapt(httpServer())
+	r := rehapt.NewRehapt(t, httpServer())
 	// Customize a bit for our tests
 	r.SetDefaultHeader("Authorization", "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
-	r.SetFail(func(err error) {
-		// Unfortunately all errors will be reported from this line here and not the real test which triggered it.
-		// This can be solved by using the runtime.Callers() method
-		// or simply use great libs like github.com/stretchr/testify/assert
-		// where a simple assert.Fail(t, err) will fix the issue
-		t.Error(err)
-	})
 	return r
 }
 

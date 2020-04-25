@@ -20,12 +20,10 @@ func setupTest(t *testing.T) *testContext {
 	server := http.NewServeMux()
 
 	c := &testContext{
-		r:      NewRehapt(server),
+		r:      NewRehapt(t, server),
 		server: server,
 	}
-	c.r.SetFail(func(err error) {
-		t.Error(err)
-	})
+
 	return c
 }
 
@@ -50,6 +48,15 @@ func ExpectNil(err error) string {
 	}
 	e := err.Error()
 	return fmt.Sprintf("Expected no error, got '%v'", e)
+}
+
+// small helper to make sure the Errorf function is called
+type testingT struct {
+	called bool
+}
+
+func (t *testingT) Errorf(format string, args ...interface{}) {
+	t.called = true
 }
 
 // Now finally our tests
@@ -639,9 +646,8 @@ func TestOKResponseRawRegexpVarsBody(t *testing.T) {
 func TestOKTestAssert(t *testing.T) {
 	c := setupTest(t)
 
-	c.r.SetFail(func(err error) {
-		t.Errorf("this function should not be called")
-	})
+	// should not be called
+	c.r.SetErrorHandler(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -1691,10 +1697,8 @@ func TestErrResponseCode(t *testing.T) {
 func TestErrTestAssertCallFailFunction(t *testing.T) {
 	c := setupTest(t)
 
-	called := false
-	c.r.SetFail(func(err error) {
-		called = true
-	})
+	tt := &testingT{}
+	c.r.SetErrorHandler(tt)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -1713,7 +1717,7 @@ func TestErrTestAssertCallFailFunction(t *testing.T) {
 		},
 	})
 
-	if called == false {
+	if tt.called == false {
 		t.Errorf("Fail function should have been called")
 	}
 }

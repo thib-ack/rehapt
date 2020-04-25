@@ -6,7 +6,7 @@
 // Example:
 //
 //  func TestAPISimple(t *testing.T) {
-//    r := NewRehapt(yourHttpServerMux)
+//    r := NewRehapt(t, yourHttpServerMux)
 //
 //    // Each testcase consist of a description of the request to execute
 //    // and a description of the expected response
@@ -49,17 +49,14 @@ import (
 	"math"
 	"net/http"
 	"net/http/httptest"
+	"path"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strconv"
+	"strings"
 	"time"
 )
-
-// DefaultFailFunction is the default fonction called by
-// TestAssert in case of failure. It simply fmt.Println() the error.
-func DefaultFailFunction(err error) {
-	fmt.Println("Error:", err)
-}
 
 // Rehapt - REST HTTP API Test
 //
@@ -69,7 +66,7 @@ type Rehapt struct {
 	httpHandler            http.Handler
 	marshaler              func(v interface{}) ([]byte, error)
 	unmarshaler            func(data []byte, v interface{}) error
-	fail                   func(err error)
+	errorHandler           ErrorHandler
 	defaultHeaders         map[string]string
 	variables              map[string]interface{}
 	defaultTimeDeltaFormat string
@@ -81,13 +78,15 @@ type Rehapt struct {
 
 // NewRehapt build a new Rehapt instance from the given http.Handler.
 // `handler` must be your server global handler. For example it could be
-// a simple http.NewServeMux() or an complex third-party library mux
-func NewRehapt(handler http.Handler) *Rehapt {
+// a simple http.NewServeMux() or an complex third-party library mux.
+// `errorHandler` can be the *testing.T parameter of your test,
+// if value is nil, the errors are printed on stdout
+func NewRehapt(errorHandler ErrorHandler, handler http.Handler) *Rehapt {
 	return &Rehapt{
 		httpHandler:            handler,
 		marshaler:              json.Marshal,
 		unmarshaler:            json.Unmarshal,
-		fail:                   DefaultFailFunction,
+		errorHandler:           errorHandler,
 		defaultHeaders:         make(map[string]string),
 		variables:              make(map[string]interface{}),
 		defaultTimeDeltaFormat: time.RFC3339,
@@ -115,10 +114,10 @@ func (r *Rehapt) SetUnmarshaler(unmarshaler func(data []byte, v interface{}) err
 	r.unmarshaler = unmarshaler
 }
 
-// SetFail allow to change the function called when TestAssert() encounter an error.
-// The default Fail callback is DefaultFailFunction which simply prints the error
-func (r *Rehapt) SetFail(fail func(err error)) {
-	r.fail = fail
+// SetErrorHandler allow to change the object handling errors which is called when TestAssert() encounter an error.
+// Setting ErrorHandler to nil will simply print the errors on stdout
+func (r *Rehapt) SetErrorHandler(errorHandler ErrorHandler) {
+	r.errorHandler = errorHandler
 }
 
 // GetVariable allow to retrive a variable value from its name.
@@ -375,11 +374,50 @@ func (r *Rehapt) Test(testcase TestCase) error {
 }
 
 // TestAssert works exactly like Test except it reports the error if not nil
-// using the fail callback function defined by SetFail (or default one)
+// using the ErrorHandler Errorf() function
 func (r *Rehapt) TestAssert(testcase TestCase) {
 	if err := r.Test(testcase); err != nil {
-		if r.fail != nil {
-			r.fail(err)
+		// index 0 is this function calling runtime.Caller() -> we can skip it
+		// start at index 1 to get the user function calling rehapt.TestAssert()
+		//
+		// We could use only the index 2, but if somebody is using rehapt.TestAssert() inside another function
+		// then it is still good to go further and return all callers recursively until we reach the std testing library
+		var callingStack []string
+		for i := 1; i < 20; i++ {
+			pc, file, line, ok := runtime.Caller(i)
+			if !ok {
+				// End of call-stack
+				break
+			}
+
+			// retrive function name from prog-counter
+			function := runtime.FuncForPC(pc)
+			if function == nil {
+				break
+			}
+
+			// functionName will have form package.FuncName
+			// "github.com/thib-ack/rehapt_test.TestErrStringResponseObject"
+			functionName := function.Name()
+
+			// That's the std testing library
+			// which is calling the tests
+			if functionName == "testing.tRunner" {
+				// Normaly we break here, when we reached the testing lib
+				break
+			}
+
+			filename := path.Base(file)
+			callingStack = append(callingStack, fmt.Sprintf("%v:%d: %v", filename, line, functionName))
+		}
+
+		message := fmt.Sprintf("%v\nError: %v", strings.Join(callingStack, "\n"), err)
+
+		if r.errorHandler != nil {
+			// Start with a \n because testing.T Errorf() prints data and do not start on new line
+			r.errorHandler.Errorf("\n" + message)
+		} else {
+			fmt.Printf(message + "\n")
 		}
 	}
 }
