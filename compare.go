@@ -11,7 +11,7 @@ import (
 func (r *Rehapt) timeDeltaCompare(ctx compareCtx) error {
 	timeDelta, ok := ctx.Expected.(TimeDelta)
 	if ok == false {
-		// This should never happend because we normally
+		// This should never happened because we normally
 		// arrive here only when ExpectedType is TimeDelta
 		panic("Expected is not TimeDelta")
 	}
@@ -43,7 +43,7 @@ func (r *Rehapt) timeDeltaCompare(ctx compareCtx) error {
 func (r *Rehapt) numberDeltaCompare(ctx compareCtx) error {
 	numDelta, ok := ctx.Expected.(NumberDelta)
 	if ok == false {
-		// This should never happend because we normally
+		// This should never happened because we normally
 		// arrive here only when ExpectedType is NumberDelta
 		panic("Expected is not NumberDelta")
 	}
@@ -70,7 +70,7 @@ func (r *Rehapt) numberDeltaCompare(ctx compareCtx) error {
 func (r *Rehapt) regexpVarsCompare(ctx compareCtx) error {
 	reVars, ok := ctx.Expected.(RegexpVars)
 	if ok == false {
-		// This should never happend because we normally
+		// This should never happened because we normally
 		// arrive here only when ExpectedType is RegexpVars
 		panic("Expected is not RegexpVars")
 	}

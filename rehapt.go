@@ -405,7 +405,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 			// That's the std testing library
 			// which is calling the tests
 			if functionName == "testing.tRunner" {
-				// Normaly we break here, when we reached the testing lib
+				// Normally we break here, when we reached the testing lib
 				break
 			}
 
