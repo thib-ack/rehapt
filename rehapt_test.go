@@ -2968,7 +2968,7 @@ func TestErrRawRegexpVarsInvalidVarname(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `invalid variable name counter 1 for group 1`); e != "" {
+	if e := ExpectError(err, `invalid variable name counter 1`); e != "" {
 		t.Error(e)
 	}
 }

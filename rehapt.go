@@ -324,21 +324,20 @@ func (r *Rehapt) Test(testcase TestCase) error {
 				if groupid >= len(elements) {
 					return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
 				}
-				if r.validVarname(varname) == false {
-					return fmt.Errorf("invalid variable name %v for group %d", varname, groupid)
+				if err := r.SetVariable(varname, elements[groupid]); err != nil {
+					return err
 				}
-				r.storeIfVariable("$"+varname+"$", elements[groupid])
 			}
 			return nil
 
 		case string:
-			if r.storeIfVariable(rawObject, recorder.Body.String()) == true {
+			if r.storeIfVariable(rawObject, actualBody) == true {
 				// This was a variable store operation. no comparison to do
 				return nil
 			}
 			// Otherwise, compare full values
-			if rawObject != recorder.Body.String() {
-				return fmt.Errorf("response body does not match. Expected %v, got %v", rawObject, recorder.Body.String())
+			if rawObject != actualBody {
+				return fmt.Errorf("response body does not match. Expected %v, got %v", rawObject, actualBody)
 			}
 			return nil
 		}
