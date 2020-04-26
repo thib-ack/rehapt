@@ -2,6 +2,7 @@ package rehapt
 
 import (
 	"io"
+	"reflect"
 	"time"
 )
 
@@ -105,3 +106,20 @@ const Any = any("{Any}")
 
 // AnyCode allow you to ignore completely the response code
 const AnyCode = -1
+
+type compareCtx struct {
+	Expected      interface{}
+	ExpectedKind  reflect.Kind
+	ExpectedType  reflect.Type
+	ExpectedValue reflect.Value
+	Actual        interface{}
+	ActualKind    reflect.Kind
+	ActualType    reflect.Type
+	ActualValue   reflect.Value
+}
+
+type comparator struct {
+	ExpectedKind reflect.Kind
+	ExpectedType reflect.Type
+	Compare      func(compareCtx) error
+}

@@ -46,7 +46,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math"
 	"net/http"
 	"net/http/httptest"
 	"path"
@@ -74,6 +73,7 @@ type Rehapt struct {
 	variableLoadRegexp     *regexp.Regexp
 	variableNameRegexp     *regexp.Regexp
 	floatPrecision         int
+	comparators            []comparator
 }
 
 // NewRehapt build a new Rehapt instance from the given http.Handler.
@@ -82,7 +82,7 @@ type Rehapt struct {
 // `errorHandler` can be the *testing.T parameter of your test,
 // if value is nil, the errors are printed on stdout
 func NewRehapt(errorHandler ErrorHandler, handler http.Handler) *Rehapt {
-	return &Rehapt{
+	r := &Rehapt{
 		httpHandler:            handler,
 		marshaler:              json.Marshal,
 		unmarshaler:            json.Unmarshal,
@@ -94,7 +94,10 @@ func NewRehapt(errorHandler ErrorHandler, handler http.Handler) *Rehapt {
 		variableLoadRegexp:     regexp.MustCompile(`_([a-zA-Z0-9]+)_`),
 		variableNameRegexp:     regexp.MustCompile(`^[a-zA-Z0-9]+$`),
 		floatPrecision:         -1,
+		comparators:            nil,
 	}
+	r.initComparators()
+	return r
 }
 
 // SetHttpHandler allow to change the http.Handler used to run requests
@@ -454,7 +457,7 @@ func (r *Rehapt) replaceVars(str string) (string, error) {
 		// Make sure variable exists, or report error
 		ivalue, ok := r.variables[varname]
 		if ok == false {
-			return "", fmt.Errorf("variable %v does is not defined", varname)
+			return "", fmt.Errorf("variable %v is not defined", varname)
 		}
 
 		// Try to convert value to string
@@ -517,6 +520,139 @@ func (r *Rehapt) storeIfVariable(expected string, actual interface{}) bool {
 	return false
 }
 
+func (r *Rehapt) initComparators() {
+	// Fill the list of supported comparators
+	// Note the list order do matter because
+	// first matching comparator is used.
+	r.comparators = []comparator{
+		{
+			ExpectedKind: reflect.Struct,
+			ExpectedType: reflect.TypeOf(TimeDelta{}),
+			Compare:      r.timeDeltaCompare,
+		},
+		{
+			ExpectedKind: reflect.Struct,
+			ExpectedType: reflect.TypeOf(NumberDelta{}),
+			Compare:      r.numberDeltaCompare,
+		},
+		{
+			ExpectedKind: reflect.Struct,
+			ExpectedType: reflect.TypeOf(RegexpVars{}),
+			Compare:      r.regexpVarsCompare,
+		},
+		{
+			ExpectedKind: reflect.Slice,
+			ExpectedType: reflect.TypeOf(UnsortedS{}),
+			Compare:      r.unsortedSliceCompare,
+		},
+		{
+			ExpectedKind: reflect.Slice,
+			ExpectedType: nil,
+			Compare:      r.sliceCompare,
+		},
+		{
+			ExpectedKind: reflect.Map,
+			ExpectedType: reflect.TypeOf(PartialM{}),
+			Compare:      r.partialMapCompare,
+		},
+		{
+			ExpectedKind: reflect.Map,
+			ExpectedType: nil,
+			Compare:      r.mapCompare,
+		},
+		{
+			ExpectedKind: reflect.String,
+			ExpectedType: reflect.TypeOf(Any),
+			Compare:      r.anyCompare,
+		},
+		{
+			ExpectedKind: reflect.String,
+			ExpectedType: reflect.TypeOf(StoreVar("")),
+			Compare:      r.storeVarCompare,
+		},
+		{
+			ExpectedKind: reflect.String,
+			ExpectedType: reflect.TypeOf(LoadVar("")),
+			Compare:      r.loadVarCompare,
+		},
+		{
+			ExpectedKind: reflect.String,
+			ExpectedType: reflect.TypeOf(Regexp("")),
+			Compare:      r.regexpCompare,
+		},
+		{
+			ExpectedKind: reflect.String,
+			ExpectedType: nil,
+			Compare:      r.stringCompare,
+		},
+		{
+			ExpectedKind: reflect.Bool,
+			ExpectedType: nil,
+			Compare:      r.boolCompare,
+		},
+		{
+			ExpectedKind: reflect.Int,
+			ExpectedType: nil,
+			Compare:      r.intCompare,
+		},
+		{
+			ExpectedKind: reflect.Int8,
+			ExpectedType: nil,
+			Compare:      r.intCompare,
+		},
+		{
+			ExpectedKind: reflect.Int16,
+			ExpectedType: nil,
+			Compare:      r.intCompare,
+		},
+		{
+			ExpectedKind: reflect.Int32,
+			ExpectedType: nil,
+			Compare:      r.intCompare,
+		},
+		{
+			ExpectedKind: reflect.Int64,
+			ExpectedType: nil,
+			Compare:      r.intCompare,
+		},
+		{
+			ExpectedKind: reflect.Uint,
+			ExpectedType: nil,
+			Compare:      r.uintCompare,
+		},
+		{
+			ExpectedKind: reflect.Uint8,
+			ExpectedType: nil,
+			Compare:      r.uintCompare,
+		},
+		{
+			ExpectedKind: reflect.Uint16,
+			ExpectedType: nil,
+			Compare:      r.uintCompare,
+		},
+		{
+			ExpectedKind: reflect.Uint32,
+			ExpectedType: nil,
+			Compare:      r.uintCompare,
+		},
+		{
+			ExpectedKind: reflect.Uint64,
+			ExpectedType: nil,
+			Compare:      r.uintCompare,
+		},
+		{
+			ExpectedKind: reflect.Float32,
+			ExpectedType: nil,
+			Compare:      r.floatCompare,
+		},
+		{
+			ExpectedKind: reflect.Float64,
+			ExpectedType: nil,
+			Compare:      r.floatCompare,
+		},
+	}
+}
+
 func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 	// This is perfectly valid
 	if expected == nil && actual == nil {
@@ -533,345 +669,27 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 	expectedType := reflect.TypeOf(expected)
 	actualType := reflect.TypeOf(actual)
 
-	// Maybe we have to ignore this completely as requested by the user
-	if expectedType == reflect.TypeOf(Any) {
-		return nil
+	ctx := compareCtx{
+		Expected:      expected,
+		ExpectedKind:  expectedType.Kind(),
+		ExpectedType:  expectedType,
+		ExpectedValue: reflect.ValueOf(expected),
+		Actual:        actual,
+		ActualKind:    actualType.Kind(),
+		ActualType:    actualType,
+		ActualValue:   reflect.ValueOf(actual),
 	}
 
-	expectedKind := expectedType.Kind()
-	actualKind := actualType.Kind()
-
-	expectedValue := reflect.ValueOf(expected)
-	actualValue := reflect.ValueOf(actual)
-
-	// We'll have only Slice and Map, never Struct as we unmarshal in interface{}
-	switch expectedKind {
-	case reflect.Struct:
-		// Some of our custom struct
-
-		// Time with delta comparison.
-		// actual value must be a string (time like "2012-04-23T18:25:43.511Z")
-		if timeDelta, ok := expected.(TimeDelta); ok == true {
-			if actualKind != reflect.String {
-				return fmt.Errorf("different kinds. Expected string, got %v", actualKind)
-			}
-
-			// Use specific time format or default one if not specified
-			format := r.defaultTimeDeltaFormat
-			if timeDelta.Format != "" {
-				format = timeDelta.Format
-			}
-
-			actual, err := time.Parse(format, actualValue.String())
-			if err != nil {
-				return fmt.Errorf("invalid time. %v", err)
-			}
-
-			dt := timeDelta.Time.Sub(actual)
-			if dt < -timeDelta.Delta || dt > timeDelta.Delta {
-				return fmt.Errorf("max difference between %v and %v allowed is %v, but difference was %v", timeDelta.Time, actual, timeDelta.Delta, dt)
-			}
-			return nil
-		}
-
-		if numDelta, ok := expected.(NumberDelta); ok == true {
-
-			actualFloatValue := float64(0.0)
-			switch actualKind {
-			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-				actualFloatValue = float64(actualValue.Int())
-			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				actualFloatValue = float64(actualValue.Uint())
-			case reflect.Float32, reflect.Float64:
-				actualFloatValue = actualValue.Float()
-			default:
-				return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", actualKind)
-			}
-
-			delta := math.Abs(numDelta.Value - actualFloatValue)
-			if delta > numDelta.Delta {
-				return fmt.Errorf("max difference between %v and %v allowed is %v, but difference was %v", numDelta.Value, actual, numDelta.Delta, delta)
-			}
-			return nil
-		}
-
-		if reVars, ok := expected.(RegexpVars); ok == true {
-			if actualKind != reflect.String {
-				return fmt.Errorf("different kinds. Expected string, got %v", actualKind)
-			}
-
-			actualStr := actualValue.String()
-
-			re, err := regexp.Compile(reVars.Regexp)
-			if err != nil {
-				return err
-			}
-			elements := re.FindStringSubmatch(actualStr)
-			if len(elements) == 0 {
-				return fmt.Errorf("regexp '%v' does not match '%v'", reVars.Regexp, actualStr)
-			}
-
-			for groupid, varname := range reVars.Vars {
-				if groupid >= len(elements) {
-					return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
-				}
-				if err := r.SetVariable(varname, elements[groupid]); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-
-		return fmt.Errorf("unexpected struct type %v", expectedType)
-
-	case reflect.Slice:
-		if actualKind != reflect.Slice {
-			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
-		}
-
-		// In case of slice, we have to compare the 2 slices.
-		if expectedValue.Len() != actualValue.Len() {
-			return fmt.Errorf("different slice sizes. Expected %v, got %v. Expected %v got %v", expectedValue.Len(), actualValue.Len(), expected, actual)
-		}
-
-		if expectedType == reflect.TypeOf(UnsortedS{}) {
-			// Unordered comparison
-			// We build a list of all the indexes (0,1,2,..,N-1)
-			// So each time we find a matching element, we can remove its index from this list
-			// and ignore it on next search
-			actualIndexes := make([]int, actualValue.Len())
-			for i := range actualIndexes {
-				actualIndexes[i] = i
-			}
-
-		nextExpected:
-			for i := 0; i < expectedValue.Len(); i++ {
-				expectedElement := expectedValue.Index(i)
-
-				// Now find a matching element in actual object.
-				// Once found, ignore the index.
-				for j := 0; j < len(actualIndexes); j++ {
-					idx := actualIndexes[j]
-					actualElement := actualValue.Index(idx)
-
-					if err := r.compare(expectedElement.Interface(), actualElement.Interface()); err == nil {
-						// Thats a match, ignore this index now, and continue to next expected.
-						actualIndexes = append(actualIndexes[:j], actualIndexes[j+1:]...)
-						continue nextExpected
-					}
-				}
-
-				// If we arrive here, we have an expected not matching any actual
-				return fmt.Errorf("expected element %v at index %v not found", expectedElement, i)
-			}
-
-			// If here we still have actual index, it means unmatched element thats bad
-			if len(actualIndexes) > 0 {
-				return fmt.Errorf("actual elements at indexes %v not found", actualIndexes)
-			}
-
-		} else {
-			// ordered comparison
-			for i := 0; i < expectedValue.Len(); i++ {
-				expectedElement := expectedValue.Index(i)
-				actualElement := actualValue.Index(i)
-				if err := r.compare(expectedElement.Interface(), actualElement.Interface()); err != nil {
-					return fmt.Errorf("slice element %v does not match. %v", i, err)
-				}
+	// Now find a matching comparator and let it do the job.
+	// We iterate through our defined comparators and stop on the first matching one.
+	// Either the Kind *and* the Type have to match (for example Kind==String and Type==Regexp)
+	// or only the Kind as a generic fallback (for example Kind==String)
+	for _, comparator := range r.comparators {
+		if comparator.ExpectedKind == ctx.ExpectedKind {
+			if comparator.ExpectedType == expectedType || comparator.ExpectedType == nil {
+				return comparator.Compare(ctx)
 			}
 		}
-
-		return nil
-
-	case reflect.Map:
-		if actualKind != reflect.Map {
-			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
-		}
-
-		// In case of map, we have to compare the 2 maps.
-		if expectedType.Key() != actualType.Key() {
-			return fmt.Errorf("different map key types. Expected %v, got %v", expectedType.Key(), actualType.Key())
-		}
-
-		// Partial match. Ignore the keys not listed in expected map
-		// to do this we just have to skip the map size comparison
-		if expectedType != reflect.TypeOf(PartialM{}) {
-			if expectedValue.Len() != actualValue.Len() {
-				return fmt.Errorf("different map sizes. Expected %v, got %v", expectedValue.Len(), actualValue.Len())
-			}
-		}
-
-		keys := expectedValue.MapKeys()
-		for _, key := range keys {
-			expectedElement := expectedValue.MapIndex(key)
-			actualElement := actualValue.MapIndex(key)
-
-			if actualElement.IsValid() == false {
-				return fmt.Errorf("expected key %v not found", key)
-			}
-
-			if err := r.compare(expectedElement.Interface(), actualElement.Interface()); err != nil {
-				return fmt.Errorf("map element [%v] does not match. %v", key, err)
-			}
-		}
-
-		return nil
-
-	case reflect.String:
-		expectedStr := expectedValue.String()
-
-		if expectedType == reflect.TypeOf(StoreVar("")) {
-			// Don't compare but store the actual value using the expectedStr as variable name
-			if err := r.SetVariable(expectedStr, actual); err != nil {
-				return err
-			}
-			return nil
-		}
-
-		if expectedType == reflect.TypeOf(LoadVar("")) {
-			// Compare actual with the loaded value which might not be string
-			value := r.GetVariable(expectedStr)
-			return r.compare(value, actual)
-		}
-
-		if r.storeIfVariable(expectedStr, actual) == true {
-			// This was a variable store operation. no comparison to do
-			return nil
-		}
-
-		if actualKind != reflect.String {
-			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
-		}
-
-		actualStr := actualValue.String()
-
-		// Make var replacement in case of
-		var err error
-		expectedStr, err = r.replaceVars(expectedStr)
-		if err != nil {
-			return err
-		}
-
-		// If regexp, then process differently
-		if expectedType == reflect.TypeOf(Regexp("")) {
-			re, err := regexp.Compile(expectedStr)
-			if err != nil {
-				return err
-			}
-			if re.MatchString(actualStr) == false {
-				return fmt.Errorf("regexp '%v' does not match '%v'", expectedStr, actualStr)
-			}
-			return nil
-		}
-
-		// classic comparison
-		if expectedStr != actualStr {
-			return fmt.Errorf("strings does not match. Expected '%v', got '%v'", expectedStr, actualStr)
-		}
-
-		return nil
-
-	case reflect.Bool:
-		if actualKind != reflect.Bool {
-			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
-		}
-
-		expectedBool := expectedValue.Bool()
-		actualBool := actualValue.Bool()
-		// classic comparison
-		if expectedBool != actualBool {
-			return fmt.Errorf("bools does not match. Expected %v, got %v", expectedBool, actualBool)
-		}
-
-		return nil
-
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-
-		expectedInt := expectedValue.Int()
-
-		switch actualKind {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			actualInt := actualValue.Int()
-			// classic comparison
-			if expectedInt != actualInt {
-				return fmt.Errorf("integers does not match. Expected %v, got %v", expectedInt, actualInt)
-			}
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			actualInt := actualValue.Uint()
-			// classic comparison
-			if uint64(expectedInt) != actualInt {
-				return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedInt, actualInt)
-			}
-		case reflect.Float32, reflect.Float64:
-			actualFloat := actualValue.Float()
-			// classic comparison
-			if float64(expectedInt) != actualFloat {
-				return fmt.Errorf("floats does not match. Expected %v, got %v", expectedInt, actualFloat)
-			}
-		default:
-			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
-		}
-
-		return nil
-
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-
-		expectedInt := expectedValue.Uint()
-
-		switch actualKind {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			actualInt := actualValue.Int()
-			// classic comparison
-			if int64(expectedInt) != actualInt {
-				return fmt.Errorf("integers does not match. Expected %v, got %v", expectedInt, actualInt)
-			}
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			actualInt := actualValue.Uint()
-			// classic comparison
-			if expectedInt != actualInt {
-				return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedInt, actualInt)
-			}
-		case reflect.Float32, reflect.Float64:
-			actualFloat := actualValue.Float()
-			// classic comparison
-			if float64(expectedInt) != actualFloat {
-				return fmt.Errorf("floats does not match. Expected %v, got %v", expectedInt, actualFloat)
-			}
-		default:
-			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
-		}
-
-		return nil
-
-	case reflect.Float32, reflect.Float64:
-
-		expectedFloat := expectedValue.Float()
-
-		switch actualKind {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			actualInt := actualValue.Int()
-			// classic comparison
-			if int64(expectedFloat) != actualInt {
-				return fmt.Errorf("integers does not match. Expected %v, got %v", expectedFloat, actualInt)
-			}
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			actualInt := actualValue.Uint()
-			// classic comparison
-			if uint64(expectedFloat) != actualInt {
-				return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedFloat, actualInt)
-			}
-		case reflect.Float32, reflect.Float64:
-			actualFloat := actualValue.Float()
-			// classic comparison
-			if expectedFloat != actualFloat {
-				return fmt.Errorf("floats does not match. Expected %v, got %v", expectedFloat, actualFloat)
-			}
-		default:
-			return fmt.Errorf("different kinds. Expected %v, got %v", expectedKind, actualKind)
-		}
-
-		return nil
 	}
-
 	return fmt.Errorf("unhandled type %T", expected)
 }

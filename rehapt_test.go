@@ -1756,15 +1756,15 @@ func TestErrResponseBodyType(t *testing.T) {
 		Error  string
 	}{
 		// Int
-		{Path: "string", Object: 1, Error: "different kinds. Expected int, got string"},
-		{Path: "bool", Object: 1, Error: "different kinds. Expected int, got bool"},
-		{Path: "map", Object: 1, Error: "different kinds. Expected int, got map"},
-		{Path: "slice", Object: 1, Error: "different kinds. Expected int, got slice"},
+		{Path: "string", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Uint
-		{Path: "string", Object: uint(1), Error: "different kinds. Expected uint, got string"},
-		{Path: "bool", Object: uint(1), Error: "different kinds. Expected uint, got bool"},
-		{Path: "map", Object: uint(1), Error: "different kinds. Expected uint, got map"},
-		{Path: "slice", Object: uint(1), Error: "different kinds. Expected uint, got slice"},
+		{Path: "string", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// String
 		{Path: "int", Object: "ok", Error: "different kinds. Expected string, got float64"}, // TODO can we force json.Unmarshal to use int ?
 		{Path: "float", Object: "ok", Error: "different kinds. Expected string, got float64"},
@@ -1772,15 +1772,15 @@ func TestErrResponseBodyType(t *testing.T) {
 		{Path: "map", Object: "ok", Error: "different kinds. Expected string, got map"},
 		{Path: "slice", Object: "ok", Error: "different kinds. Expected string, got slice"},
 		// Float32
-		{Path: "string", Object: float32(0.1), Error: "different kinds. Expected float32, got string"},
-		{Path: "bool", Object: float32(0.1), Error: "different kinds. Expected float32, got bool"},
-		{Path: "map", Object: float32(0.1), Error: "different kinds. Expected float32, got map"},
-		{Path: "slice", Object: float32(0.1), Error: "different kinds. Expected float32, got slice"},
+		{Path: "string", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Float64
-		{Path: "string", Object: float64(0.1), Error: "different kinds. Expected float64, got string"},
-		{Path: "bool", Object: float64(0.1), Error: "different kinds. Expected float64, got bool"},
-		{Path: "map", Object: float64(0.1), Error: "different kinds. Expected float64, got map"},
-		{Path: "slice", Object: float64(0.1), Error: "different kinds. Expected float64, got slice"},
+		{Path: "string", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Bool
 		{Path: "string", Object: true, Error: "different kinds. Expected bool, got string"},
 		{Path: "int", Object: true, Error: "different kinds. Expected bool, got float64"},
@@ -1800,11 +1800,11 @@ func TestErrResponseBodyType(t *testing.T) {
 		{Path: "bool", Object: S{}, Error: "different kinds. Expected slice, got bool"},
 		{Path: "map", Object: S{}, Error: "different kinds. Expected slice, got map"},
 		// Struct
-		{Path: "string", Object: struct{}{}, Error: "unexpected struct type struct {}"},
-		{Path: "int", Object: struct{}{}, Error: "unexpected struct type struct {}"},
-		{Path: "float", Object: struct{}{}, Error: "unexpected struct type struct {}"},
-		{Path: "bool", Object: struct{}{}, Error: "unexpected struct type struct {}"},
-		{Path: "slice", Object: struct{}{}, Error: "unexpected struct type struct {}"},
+		{Path: "string", Object: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "int", Object: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "float", Object: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "bool", Object: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "slice", Object: struct{}{}, Error: "unhandled type struct {}"},
 		// Unhandled
 		{Path: "string", Object: complex(1, 2), Error: "unhandled type complex128"},
 	}
@@ -2498,7 +2498,7 @@ func TestErrLoadVarShortcutUnknownVariable(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [status] does not match. variable unknownvar does is not defined`); e != "" {
+	if e := ExpectError(err, `map element [status] does not match. variable unknownvar is not defined`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2525,7 +2525,7 @@ func TestErrLoadVarShortcutUnknownVariableInPath(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `error while replacing variables in path. variable unknown does is not defined`); e != "" {
+	if e := ExpectError(err, `error while replacing variables in path. variable unknown is not defined`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2562,6 +2562,31 @@ func TestErrLoadVarShortcutInvalidVariableType(t *testing.T) {
 	}
 }
 
+func TestErrUnsortedSliceDifferentSize(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `["A", "B"]`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: UnsortedS{"A"},
+		},
+	})
+
+	if e := ExpectError(err, `different slice sizes. Expected 1, got 2. Expected [A] got [A B]`); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestErrUnsortedSliceElementNotFound(t *testing.T) {
 	c := setupTest(t)
 
@@ -2583,6 +2608,56 @@ func TestErrUnsortedSliceElementNotFound(t *testing.T) {
 	})
 
 	if e := ExpectError(err, `expected element E at index 2 not found`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrPartialMapKeyNotFound(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"key": "value"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: PartialM{"foo": "bar"},
+		},
+	})
+
+	if e := ExpectError(err, `expected key foo not found`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrPartialMapElementDoesNotMatch(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"key": "value"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: PartialM{"key": "bar"},
+		},
+	})
+
+	if e := ExpectError(err, `map element [key] does not match. strings does not match. Expected 'bar', got 'value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2610,6 +2685,60 @@ func TestErrRegexpFailParsing(t *testing.T) {
 	})
 
 	if e := ExpectError(err, "map element [stats] does not match. error parsing regexp: missing closing ): `^[0-9](3 - .* - end$`"); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrRegexpNotString(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": 500}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"stats": Regexp(`^[a-z]{3}$`),
+			},
+		},
+	})
+
+	if e := ExpectError(err, `map element [stats] does not match. different kinds. Expected string, got float64`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrRegexpReplaceUnknownVariable(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, `{"stats": "hello world"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Object: M{
+				"stats": Regexp(`^[a-z]+ _who_$`),
+			},
+		},
+	})
+
+	if e := ExpectError(err, `map element [stats] does not match. variable who is not defined`); e != "" {
 		t.Error(e)
 	}
 }
