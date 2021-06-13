@@ -106,13 +106,13 @@ func (r *Rehapt) SetHttpHandler(handler http.Handler) {
 	r.httpHandler = handler
 }
 
-// SetMarshaler allow to change the marshaling function used to encode requests body.
+// SetMarshaler allow to change the marshal function used to encode requests body.
 // The default marshaler is json.Marshal
 func (r *Rehapt) SetMarshaler(marshaler func(v interface{}) ([]byte, error)) {
 	r.marshaler = marshaler
 }
 
-// SetUnmarshaler allow to change the unmarshaling function used to decode requests response.
+// SetUnmarshaler allow to change the unmarshal function used to decode requests response.
 // The default unmarshaler is json.Unmarshal
 func (r *Rehapt) SetUnmarshaler(unmarshaler func(data []byte, v interface{}) error) {
 	r.unmarshaler = unmarshaler
@@ -124,13 +124,13 @@ func (r *Rehapt) SetErrorHandler(errorHandler ErrorHandler) {
 	r.errorHandler = errorHandler
 }
 
-// GetVariable allow to retrive a variable value from its name.
+// GetVariable allow to retrieve a variable value from its name.
 // nil is returned if variable is not found
 func (r *Rehapt) GetVariable(name string) interface{} {
 	return r.variables[name]
 }
 
-// GetVariableString allow to retrive a variable value as a string from its name
+// GetVariableString allow to retrieve a variable value as a string from its name
 // empty string is returned if variable is not found
 func (r *Rehapt) GetVariableString(name string) string {
 	if value, ok := r.variables[name].(string); ok == true {
@@ -333,7 +333,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	}
 
 	// Want a raw comparison ?
-	// This is useful if response cannot be unmarshaled. (for example simple plain/text output)
+	// This is useful if response cannot be unmarshal. (for example simple plain/text output)
 	if testcase.Response.Raw != nil {
 		if err := r.compare(testcase.Response.Raw, recorder.Body.String()); err != nil {
 			bodyError = err
