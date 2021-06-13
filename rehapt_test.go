@@ -490,7 +490,7 @@ func TestOKRequestHeader(t *testing.T) {
 		Request: TestRequest{
 			Method:  "POST",
 			Path:    "/api/test",
-			Headers: H{"X-Custom": "custom value 123"},
+			Headers: H{"X-Custom": {"custom value 123"}},
 			Body:    nil,
 		},
 		Response: TestResponse{
@@ -521,7 +521,7 @@ func TestOKResponseHeader(t *testing.T) {
 		Response: TestResponse{
 			Code: http.StatusOK,
 			Headers: H{
-				"X-Custom": "custom value 123",
+				"X-Custom": {"custom value 123"},
 			},
 			Object: nil,
 		},
@@ -529,6 +529,66 @@ func TestOKResponseHeader(t *testing.T) {
 
 	if e := ExpectNil(err); e != "" {
 		t.Error(e)
+	}
+}
+
+func TestOKResponseHeaderRegexp(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Custom", "custom value 123")
+		w.WriteHeader(http.StatusOK)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Headers: M{
+				"X-Custom": S{Regexp(`custom [a-z]+ [1-3]+`)},
+			},
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKResponseHeaderStoreVar(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Custom", "custom value 123")
+		w.WriteHeader(http.StatusOK)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Headers: M{
+				"X-Custom": S{StoreVar("header")},
+			},
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	if expected, actual := "custom value 123", c.r.GetVariable("header"); expected != actual {
+		t.Errorf("expected value %v but got %v", expected, actual)
 	}
 }
 
@@ -1996,13 +2056,13 @@ func TestErrResponseHeader(t *testing.T) {
 		Response: TestResponse{
 			Code: http.StatusOK,
 			Headers: H{
-				"X-Custom": "custom value 123",
+				"X-Custom": {"custom value 123"},
 			},
 			Object: nil,
 		},
 	})
 
-	if e := ExpectError(err, `response header X-Custom does not match. Expected custom value 123, got not right value`); e != "" {
+	if e := ExpectError(err, `response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings does not match. Expected 'custom value 123', got 'not right value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2151,8 +2211,11 @@ func TestErrMapDifferentSize(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different map sizes. Expected 2, got 1`); e != "" {
-		t.Error(e)
+	// as printed order of map is unknown, we have to expect any of the two possibilities
+	e1 := ExpectError(err, `different map sizes. Expected 2, got 1. Expected map[foo:bar key:value] got map[key:value]`)
+	e2 := ExpectError(err, `different map sizes. Expected 2, got 1. Expected map[key:value foo:bar] got map[key:value]`)
+	if !(e1 == "" || e2 == "") {
+		t.Error(e1)
 	}
 }
 
@@ -2176,7 +2239,7 @@ func TestErrMapKeyNotFound(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected key foo not found`); e != "" {
+	if e := ExpectError(err, `expected key foo not found in actual map[key:value]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2607,7 +2670,8 @@ func TestErrUnsortedSliceElementNotFound(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected element E at index 2 not found`); e != "" {
+	if e := ExpectError(err, `expected element E at index 2 not found
+actual elements at indexes [0] not found`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2938,7 +3002,7 @@ func TestErrRawUnhandled(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "unsupported Raw object type int"); e != "" {
+	if e := ExpectError(err, "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"); e != "" {
 		t.Error(e)
 	}
 }
@@ -2963,7 +3027,7 @@ func TestErrRawStringDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "response body does not match. Expected Hello this is plain text, got Hello this is plain text 1234"); e != "" {
+	if e := ExpectError(err, "strings does not match. Expected 'Hello this is plain text', got 'Hello this is plain text 1234'"); e != "" {
 		t.Error(e)
 	}
 }
@@ -3126,6 +3190,37 @@ func TestErrRawRegexpVarsOverflowIndex(t *testing.T) {
 	})
 
 	if e := ExpectError(err, `expected variable index 2 overflow regexp group count of 2`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrMultipleErrors(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Custom", "not right value")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"key": "value"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Headers: H{
+				"X-Custom": {"custom value 123"},
+			},
+			Object: M{},
+		},
+	})
+
+	if e := ExpectError(err, `response code does not match. Expected 200, got 400
+response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings does not match. Expected 'custom value 123', got 'not right value'
+different map sizes. Expected 0, got 1. Expected map[] got map[key:value]`); e != "" {
 		t.Error(e)
 	}
 }

@@ -43,6 +43,7 @@ package rehapt
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -66,7 +67,7 @@ type Rehapt struct {
 	marshaler              func(v interface{}) ([]byte, error)
 	unmarshaler            func(data []byte, v interface{}) error
 	errorHandler           ErrorHandler
-	defaultHeaders         map[string]string
+	defaultHeaders         http.Header
 	variables              map[string]interface{}
 	defaultTimeDeltaFormat string
 	variableStoreRegexp    *regexp.Regexp
@@ -87,7 +88,7 @@ func NewRehapt(errorHandler ErrorHandler, handler http.Handler) *Rehapt {
 		marshaler:              json.Marshal,
 		unmarshaler:            json.Unmarshal,
 		errorHandler:           errorHandler,
-		defaultHeaders:         make(map[string]string),
+		defaultHeaders:         make(http.Header),
 		variables:              make(map[string]interface{}),
 		defaultTimeDeltaFormat: time.RFC3339,
 		variableStoreRegexp:    regexp.MustCompile(`^\$([a-zA-Z0-9]+)\$$`),
@@ -148,17 +149,38 @@ func (r *Rehapt) SetVariable(name string, value interface{}) error {
 	return nil
 }
 
+// SetDefaultHeaders allow to set all default request headers.
+// These headers will be added to all requests, however each
+// TestCase can override their values
+func (r *Rehapt) SetDefaultHeaders(headers http.Header) {
+	r.defaultHeaders = headers
+}
+
+// GetDefaultHeaders allow to get all default request headers.
+// These headers will be added to all requests, however each
+// TestCase can override their values
+func (r *Rehapt) GetDefaultHeaders() http.Header {
+	return r.defaultHeaders
+}
+
 // GetDefaultHeader returns the default request header value from its name.
 // Default headers are added automatically to all requests
 func (r *Rehapt) GetDefaultHeader(name string) string {
-	return r.defaultHeaders[name]
+	return r.defaultHeaders.Get(name)
 }
 
-// SetDefaultHeader allow to add a default request header.
+// SetDefaultHeader allow to set a default request header.
 // This header will be added to all requests, however each
 // TestCase can override its value
 func (r *Rehapt) SetDefaultHeader(name string, value string) {
-	r.defaultHeaders[name] = value
+	r.defaultHeaders.Set(name, value)
+}
+
+// AddDefaultHeader allow to add a default request header.
+// This header will be added to all requests, however each
+// TestCase can override its value
+func (r *Rehapt) AddDefaultHeader(name string, value string) {
+	r.defaultHeaders.Add(name, value)
 }
 
 // SetDefaultTimeDeltaFormat allow to change the default time format
@@ -265,112 +287,103 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	}
 
 	// Add the default headers (if any)
-	for k, v := range r.defaultHeaders {
-		request.Header.Set(k, v)
-	}
+	request.Header = r.defaultHeaders
+
 	// Add the testcase defined headers. This overrides any default header previously set
-	for k, v := range testcase.Request.Headers {
-		request.Header.Set(k, v)
+	for k, values := range testcase.Request.Headers {
+		k, err = r.replaceVars(k)
+		if err != nil {
+			return fmt.Errorf("error while replacing variables in header name. %v", err)
+		}
+		request.Header.Del(k)
+		for _, value := range values {
+			value, err = r.replaceVars(value)
+			if err != nil {
+				return fmt.Errorf("error while replacing variables in header value. %v", err)
+			}
+			request.Header.Add(k, value)
+		}
 	}
 
 	// Now execute the request and record its response
 	recorder := httptest.NewRecorder()
 	r.httpHandler.ServeHTTP(recorder, request)
+	response := recorder.Result()
 
 	// And start to check result.
+	// But don't stop on first error, for example if http code doesn't match,
+	// we can still compare headers and body.
+	var codeError error
+	var headersError error
+	var bodyError error
 
 	// First check HTTP response code
 	// Maybe we have to ignore this completely as requested by the user
 	if testcase.Response.Code != AnyCode {
-		if testcase.Response.Code != recorder.Code {
-			return fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, recorder.Code)
+		if testcase.Response.Code != response.StatusCode {
+			codeError = fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, response.StatusCode)
 		}
 	}
 
-	// Check headers, but not all of them. Only the ones expected by the user
-	for header, value := range testcase.Response.Headers {
-		actualValue := recorder.Header().Get(header)
-		if value != actualValue {
-			return fmt.Errorf("response header %v does not match. Expected %v, got %v", header, value, actualValue)
+	// Check headers if requested
+	if testcase.Response.Headers != nil {
+		if err := r.compare(testcase.Response.Headers, response.Header); err != nil {
+			headersError = fmt.Errorf("response headers does not match. %v", err)
 		}
 	}
 
 	// Want a raw comparison ?
 	// This is useful if response cannot be unmarshaled. (for example simple plain/text output)
 	if testcase.Response.Raw != nil {
-		actualBody := recorder.Body.String()
-
-		// However we still provide some features for this.
-		// We can use Regexp, RegexpVars or simple string
-		switch rawObject := testcase.Response.Raw.(type) {
-		case Regexp:
-			re, err := regexp.Compile(string(rawObject))
-			if err != nil {
-				return err
-			}
-			if re.MatchString(actualBody) == false {
-				return fmt.Errorf("regexp '%v' does not match '%v'", rawObject, actualBody)
-			}
-			return nil
-
-		case RegexpVars:
-			re, err := regexp.Compile(rawObject.Regexp)
-			if err != nil {
-				return err
-			}
-			elements := re.FindStringSubmatch(actualBody)
-			if len(elements) == 0 {
-				return fmt.Errorf("regexp '%v' does not match '%v'", rawObject.Regexp, actualBody)
-			}
-
-			for groupid, varname := range rawObject.Vars {
-				if groupid >= len(elements) {
-					return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
-				}
-				if err := r.SetVariable(varname, elements[groupid]); err != nil {
-					return err
-				}
-			}
-			return nil
-
-		case string:
-			if r.storeIfVariable(rawObject, actualBody) == true {
-				// This was a variable store operation. no comparison to do
-				return nil
-			}
-			// Otherwise, compare full values
-			if rawObject != actualBody {
-				return fmt.Errorf("response body does not match. Expected %v, got %v", rawObject, actualBody)
-			}
-			return nil
+		if err := r.compare(testcase.Response.Raw, recorder.Body.String()); err != nil {
+			bodyError = err
 		}
 
-		return fmt.Errorf("unsupported Raw object type %T", testcase.Response.Raw)
-	}
-
-	data, err := ioutil.ReadAll(recorder.Body)
-	if err != nil {
-		return fmt.Errorf("cannot read response body. %v", err)
-	}
-
-	var responseBody interface{}
-	if len(data) > 0 {
-		if err := r.unmarshaler(data, &responseBody); err != nil {
-			// If body is nil, then continue with nil decoded body
-			// the compare function will handle if that's expected or not
-			// but we don't want to report an unmarshal error
-			if err != io.EOF {
-				return fmt.Errorf("cannot unmarshal response body. %v", err)
+	} else {
+		// Use Object expected body
+		bodyError = func() error {
+			data, err := ioutil.ReadAll(response.Body)
+			if err != nil {
+				return fmt.Errorf("cannot read response body. %v", err)
 			}
-		}
+
+			var responseBody interface{}
+			if len(data) > 0 {
+				if err := r.unmarshaler(data, &responseBody); err != nil {
+					// If body is nil, then continue with nil decoded body
+					// the compare function will handle if that's expected or not
+					// but we don't want to report an unmarshal error
+					if err != io.EOF {
+						return fmt.Errorf("cannot unmarshal response body. %v", err)
+					}
+				}
+			}
+
+			// Compare the response body with our testcase response object
+			// We could have used reflect.DeepEqual but we want finer comparison,
+			// which allow ignoring some fields, storing variables, using variables, etc.
+			// This is the main purpose of this library
+			if err := r.compare(testcase.Response.Object, responseBody); err != nil {
+				return err
+			}
+
+			return nil
+		}()
 	}
 
-	// Compare the response body with our testcase response object
-	// We could have used reflect.DeepEqual but we want finer comparison,
-	// which allow ignoring some fields, storing variables, using variables, etc.
-	// This is the main purpose of this library
-	if err := r.compare(testcase.Response.Object, responseBody); err != nil {
-		return err
+	// Build an error based on the 3 possible errors on code, headers and body
+	if codeError != nil || headersError != nil || bodyError != nil {
+		e := ""
+		if codeError != nil {
+			e += codeError.Error() + "\n"
+		}
+		if headersError != nil {
+			e += headersError.Error() + "\n"
+		}
+		if bodyError != nil {
+			e += bodyError.Error()
+		}
+		return errors.New(strings.TrimSuffix(e, "\n"))
 	}
 	return nil
 }
@@ -392,7 +405,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 				break
 			}
 
-			// retrive function name from prog-counter
+			// retrieve function name from prog-counter
 			function := runtime.FuncForPC(pc)
 			if function == nil {
 				break

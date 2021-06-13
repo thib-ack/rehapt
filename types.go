@@ -30,15 +30,15 @@ type TestRequest struct {
 
 // TestResponse describe the response expected
 type TestResponse struct {
-	Headers H
+	Headers interface{}
 	Code    int
 	Object  interface{}
 	Raw     interface{}
 }
 
 // H declare a Headers map.
-// It is used to quickly define Headers within your requests and responses
-type H map[string]string
+// It is used to quickly define Headers within your requests
+type H map[string][]string
 
 // M declare a Map.
 // It is used to quickly build a map within your expected response body
