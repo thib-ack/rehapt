@@ -1,10 +1,12 @@
 package rehapt
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -122,6 +124,8 @@ func (r *Rehapt) unsortedSliceCompare(ctx compareCtx) error {
 		actualIndexes[i] = i
 	}
 
+	var errs []string
+
 nextExpected:
 	for i := 0; i < expectedLen; i++ {
 		expectedElement := ctx.ExpectedValue.Index(i)
@@ -140,14 +144,17 @@ nextExpected:
 		}
 
 		// If we arrive here, we have an expected not matching any actual
-		return fmt.Errorf("expected element %v at index %v not found", expectedElement, i)
+		errs = append(errs, fmt.Sprintf("expected element %v at index %v not found", expectedElement, i))
 	}
 
-	// If here we still have actual index, it means unmatched element thats bad
+	// If here we still have actual index, it means unmatched element
 	if len(actualIndexes) > 0 {
-		return fmt.Errorf("actual elements at indexes %v not found", actualIndexes)
+		errs = append(errs, fmt.Sprintf("actual elements at indexes %v not found", actualIndexes))
 	}
 
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, "\n"))
+	}
 	return nil
 }
 
@@ -159,18 +166,23 @@ func (r *Rehapt) sliceCompare(ctx compareCtx) error {
 	expectedLen := ctx.ExpectedValue.Len()
 	actualLen := ctx.ActualValue.Len()
 	if expectedLen != actualLen {
-		return fmt.Errorf("different slice sizes. Expected %v, got %v. Expected %v got %v", expectedLen, actualLen, ctx.Expected, ctx.Actual)
+		return fmt.Errorf("different slice sizes. Expected %d, got %d. Expected %v got %v", expectedLen, actualLen, ctx.Expected, ctx.Actual)
 	}
+
+	var errs []string
 
 	// ordered comparison
 	for i := 0; i < expectedLen; i++ {
 		expectedElement := ctx.ExpectedValue.Index(i)
 		actualElement := ctx.ActualValue.Index(i)
 		if err := r.compare(expectedElement.Interface(), actualElement.Interface()); err != nil {
-			return fmt.Errorf("slice element %v does not match. %v", i, err)
+			errs = append(errs, fmt.Sprintf("slice element %v does not match. %v", i, err))
 		}
 	}
 
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, "\n"))
+	}
 	return nil
 }
 
@@ -184,6 +196,8 @@ func (r *Rehapt) partialMapCompare(ctx compareCtx) error {
 		return fmt.Errorf("different map key types. Expected %v, got %v", ctx.ExpectedType.Key(), ctx.ActualType.Key())
 	}
 
+	var errs []string
+
 	// Partial match. Ignore the keys not listed in expected map
 	// to do this we just have to skip the map size comparison
 	keys := ctx.ExpectedValue.MapKeys()
@@ -192,14 +206,18 @@ func (r *Rehapt) partialMapCompare(ctx compareCtx) error {
 		actualElement := ctx.ActualValue.MapIndex(key)
 
 		if actualElement.IsValid() == false {
-			return fmt.Errorf("expected key %v not found", key)
+			errs = append(errs, fmt.Sprintf("expected key %v not found", key))
+			continue
 		}
 
 		if err := r.compare(expectedElement.Interface(), actualElement.Interface()); err != nil {
-			return fmt.Errorf("map element [%v] does not match. %v", key, err)
+			errs = append(errs, fmt.Sprintf("map element [%v] does not match. %v", key, err))
 		}
 	}
 
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, "\n"))
+	}
 	return nil
 }
 
@@ -214,23 +232,28 @@ func (r *Rehapt) mapCompare(ctx compareCtx) error {
 	}
 
 	if ctx.ExpectedValue.Len() != ctx.ActualValue.Len() {
-		return fmt.Errorf("different map sizes. Expected %v, got %v", ctx.ExpectedValue.Len(), ctx.ActualValue.Len())
+		return fmt.Errorf("different map sizes. Expected %d, got %d. Expected %v got %v", ctx.ExpectedValue.Len(), ctx.ActualValue.Len(), ctx.Expected, ctx.Actual)
 	}
 
+	var errs []string
 	keys := ctx.ExpectedValue.MapKeys()
 	for _, key := range keys {
 		expectedElement := ctx.ExpectedValue.MapIndex(key)
 		actualElement := ctx.ActualValue.MapIndex(key)
 
 		if actualElement.IsValid() == false {
-			return fmt.Errorf("expected key %v not found", key)
+			errs = append(errs, fmt.Sprintf("expected key %v not found in actual %v", key, ctx.Actual))
+			continue
 		}
 
 		if err := r.compare(expectedElement.Interface(), actualElement.Interface()); err != nil {
-			return fmt.Errorf("map element [%v] does not match. %v", key, err)
+			errs = append(errs, fmt.Sprintf("map element [%v] does not match. %v", key, err))
 		}
 	}
 
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, "\n"))
+	}
 	return nil
 }
 
