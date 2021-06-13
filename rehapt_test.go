@@ -67,7 +67,7 @@ func TestOKStringResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"ok"`)
+		_, _ = fmt.Fprintf(w, `"ok"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -92,7 +92,7 @@ func TestOKBoolResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `true`)
+		_, _ = fmt.Fprintf(w, `true`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -117,7 +117,7 @@ func TestOKIntResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `10`)
+		_, _ = fmt.Fprintf(w, `10`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -190,7 +190,7 @@ func TestOKFloatResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `10.0`)
+		_, _ = fmt.Fprintf(w, `10.0`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -263,7 +263,7 @@ func TestOKMapResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"name": "John", "Age": 51}`)
+		_, _ = fmt.Fprintf(w, `{"name": "John", "Age": 51}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -291,7 +291,7 @@ func TestOKPartialMapResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"name": "John", "Age": 51}`)
+		_, _ = fmt.Fprintf(w, `{"name": "John", "Age": 51}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -318,7 +318,7 @@ func TestOKSliceResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["John", "Doe", 99]`)
+		_, _ = fmt.Fprintf(w, `["John", "Doe", 99]`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -347,7 +347,7 @@ func TestOKUnsortedSliceResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["John", "Doe", 99]`)
+		_, _ = fmt.Fprintf(w, `["John", "Doe", 99]`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -597,7 +597,7 @@ func TestOKResponseRawStringBody(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -622,7 +622,7 @@ func TestOKResponseRawStoreVarShortcutBody(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -651,7 +651,7 @@ func TestOKResponseRawRegexpBody(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -676,7 +676,7 @@ func TestOKResponseRawRegexpVarsBody(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -711,7 +711,7 @@ func TestOKTestAssert(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"ok"`)
+		_, _ = fmt.Fprintf(w, `"ok"`)
 	})
 
 	c.r.TestAssert(TestCase{
@@ -732,7 +732,7 @@ func TestOKIgnoreResponseCode(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"stats": "ok"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "ok"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -759,7 +759,7 @@ func TestOKIgnoreMapValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -786,7 +786,7 @@ func TestOKIgnoreResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -811,7 +811,7 @@ func TestOKStoreVarStringValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -842,7 +842,7 @@ func TestOKStoreVarNumberValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": 1580}`)
+		_, _ = fmt.Fprintf(w, `{"stats": 1580}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -873,7 +873,7 @@ func TestOKLoadVarStringValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "value"}`)
 	})
 
 	err := c.r.SetVariable("myvar", "value")
@@ -905,7 +905,7 @@ func TestOKLoadVarNumberValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": 1580}`)
+		_, _ = fmt.Fprintf(w, `{"stats": 1580}`)
 	})
 
 	err := c.r.SetVariable("myvar", 1580)
@@ -951,7 +951,7 @@ func TestOKRegexp(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -978,7 +978,7 @@ func TestOKStoreVarShortcutStringValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "high"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "high"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1009,7 +1009,7 @@ func TestOKStoreVarShortcutNumberValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": 1580}`)
+		_, _ = fmt.Fprintf(w, `{"stats": 1580}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1040,7 +1040,7 @@ func TestOKStoreVarShortcutChangedBounds(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "high"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "high"}`)
 	})
 
 	err := c.r.SetStoreShortcutBounds("(", ")")
@@ -1076,7 +1076,7 @@ func TestOKLoadVarShortcutString(t *testing.T) {
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "value is ok !"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "value is ok !"}`)
 	})
 
 	err := c.r.SetVariable("id", "123")
@@ -1113,7 +1113,7 @@ func TestOKLoadVarShortcutInt(t *testing.T) {
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "value is 100"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "value is 100"}`)
 	})
 
 	values := []interface{}{
@@ -1151,7 +1151,7 @@ func TestOKLoadVarShortcutFloat(t *testing.T) {
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "value is 100.5"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "value is 100.5"}`)
 	})
 
 	values := []interface{}{float32(100.5), float64(100.5)}
@@ -1186,7 +1186,7 @@ func TestOKLoadVarShortcutFloatWithPrecision(t *testing.T) {
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "value is 100.500"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "value is 100.500"}`)
 	})
 
 	c.r.SetLoadShortcutFloatPrecision(3)
@@ -1223,7 +1223,7 @@ func TestOKLoadVarShortcutBool(t *testing.T) {
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "value is true"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "value is true"}`)
 	})
 
 	err := c.r.SetVariable("id", true)
@@ -1255,7 +1255,7 @@ func TestOKLoadVarShortcutChangedBounds(t *testing.T) {
 
 	c.server.HandleFunc("/api/test/123", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "ok"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "ok"}`)
 	})
 
 	err := c.r.SetVariable("id", "123")
@@ -1292,7 +1292,7 @@ func TestOKNumberDeltaExactValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `555`)
+		_, _ = fmt.Fprintf(w, `555`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1320,7 +1320,7 @@ func TestOKNumberDeltaLowerValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `555`)
+		_, _ = fmt.Fprintf(w, `555`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1348,7 +1348,7 @@ func TestOKNumberDeltaGreaterValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `555`)
+		_, _ = fmt.Fprintf(w, `555`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1376,7 +1376,7 @@ func TestOKTimeDeltaExactValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
+		_, _ = fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1404,7 +1404,7 @@ func TestOKTimeDeltaBeforeValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
+		_, _ = fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1432,7 +1432,7 @@ func TestOKTimeDeltaAfterValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
+		_, _ = fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1462,7 +1462,7 @@ func TestOKTimeDeltaDefaultFormat(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"Day 2020-04-11 Hour 20:10:30.123Z"`)
+		_, _ = fmt.Fprintf(w, `"Day 2020-04-11 Hour 20:10:30.123Z"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1490,7 +1490,7 @@ func TestOKTimeDeltaFormat(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"Day 2020-04-11 Hour 20:10:30.123Z"`)
+		_, _ = fmt.Fprintf(w, `"Day 2020-04-11 Hour 20:10:30.123Z"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1519,7 +1519,7 @@ func TestOKRegexpVars(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"The output value is: Hello and World."`)
+		_, _ = fmt.Fprintf(w, `"The output value is: Hello and World."`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1555,7 +1555,7 @@ func TestOKRegexpVarsOnlyFullMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"--header--content--footer--"`)
+		_, _ = fmt.Fprintf(w, `"--header--content--footer--"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1762,7 +1762,7 @@ func TestErrTestAssertCallFailFunction(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"ok"`)
+		_, _ = fmt.Fprintf(w, `"ok"`)
 	})
 
 	c.r.TestAssert(TestCase{
@@ -1787,27 +1787,27 @@ func TestErrResponseBodyType(t *testing.T) {
 
 	c.server.HandleFunc("/api/string", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"ok"`)
+		_, _ = fmt.Fprintf(w, `"ok"`)
 	})
 	c.server.HandleFunc("/api/int", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `1`)
+		_, _ = fmt.Fprintf(w, `1`)
 	})
 	c.server.HandleFunc("/api/float", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `1.0`)
+		_, _ = fmt.Fprintf(w, `1.0`)
 	})
 	c.server.HandleFunc("/api/bool", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `true`)
+		_, _ = fmt.Fprintf(w, `true`)
 	})
 	c.server.HandleFunc("/api/map", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"msg": "ok"}`)
+		_, _ = fmt.Fprintf(w, `{"msg": "ok"}`)
 	})
 	c.server.HandleFunc("/api/slice", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["ok"]`)
+		_, _ = fmt.Fprintf(w, `["ok"]`)
 	})
 
 	tests := []struct {
@@ -1893,7 +1893,7 @@ func TestErrStringResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"ok"`)
+		_, _ = fmt.Fprintf(w, `"ok"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1918,7 +1918,7 @@ func TestErrBoolResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `true`)
+		_, _ = fmt.Fprintf(w, `true`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1943,7 +1943,7 @@ func TestErrIntResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `100`)
+		_, _ = fmt.Fprintf(w, `100`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1968,7 +1968,7 @@ func TestErrUintResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `100`)
+		_, _ = fmt.Fprintf(w, `100`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -1993,7 +1993,7 @@ func TestErrFloatResponseObject(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `100.0`)
+		_, _ = fmt.Fprintf(w, `100.0`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2019,7 +2019,7 @@ func TestErrUnmarshalResponseBody(t *testing.T) {
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		// This is not valid JSON
-		fmt.Fprintf(w, `{"error": invalid...`)
+		_, _ = fmt.Fprintf(w, `{"error": invalid...`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2096,7 +2096,7 @@ func TestErrResponseBodyExpectedNil(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"success"`)
+		_, _ = fmt.Fprintf(w, `"success"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2121,7 +2121,7 @@ func TestErrSliceDifferentSize(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["A", "B"]`)
+		_, _ = fmt.Fprintf(w, `["A", "B"]`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2146,7 +2146,7 @@ func TestErrSliceElementDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["A", "B"]`)
+		_, _ = fmt.Fprintf(w, `["A", "B"]`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2171,7 +2171,7 @@ func TestErrMapDifferentKeyType(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"key": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"key": "value"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2196,7 +2196,7 @@ func TestErrMapDifferentSize(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"key": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"key": "value"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2224,7 +2224,7 @@ func TestErrMapKeyNotFound(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"key": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"key": "value"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2249,7 +2249,7 @@ func TestErrMapElementDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"key": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"key": "value"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2274,7 +2274,7 @@ func TestErrNumberDeltaNotNumber(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"hi"`)
+		_, _ = fmt.Fprintf(w, `"hi"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2302,7 +2302,7 @@ func TestErrNumberDeltaLowerValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `500`)
+		_, _ = fmt.Fprintf(w, `500`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2330,7 +2330,7 @@ func TestErrNumberDeltaGreaterValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `500`)
+		_, _ = fmt.Fprintf(w, `500`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2358,7 +2358,7 @@ func TestErrTimeDeltaNotString(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `1000`)
+		_, _ = fmt.Fprintf(w, `1000`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2386,7 +2386,7 @@ func TestErrTimeDeltaNotTime(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"hello"`)
+		_, _ = fmt.Fprintf(w, `"hello"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2414,7 +2414,7 @@ func TestErrTimeDeltaBeforeValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
+		_, _ = fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2442,7 +2442,7 @@ func TestErrTimeDeltaAfterValue(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
+		_, _ = fmt.Fprintf(w, `"2020-04-11T20:10:30.123Z"`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2479,7 +2479,7 @@ func TestErrStoreVarInvalidVarname(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "high"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "high"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2506,7 +2506,7 @@ func TestErrStoreVarInvalidBounds(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "high"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "high"}`)
 	})
 
 	err := c.r.SetStoreShortcutBounds("", ")")
@@ -2525,7 +2525,7 @@ func TestErrLoadVarInvalidBounds(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "high"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "high"}`)
 	})
 
 	err := c.r.SetLoadShortcutBounds("", ")")
@@ -2544,7 +2544,7 @@ func TestErrLoadVarShortcutUnknownVariable(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "status is ok"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "status is ok"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2571,7 +2571,7 @@ func TestErrLoadVarShortcutUnknownVariableInPath(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "status is ok"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "status is ok"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2598,7 +2598,7 @@ func TestErrLoadVarShortcutInvalidVariableType(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"status": "status is ok"}`)
+		_, _ = fmt.Fprintf(w, `{"status": "status is ok"}`)
 	})
 
 	err := c.r.SetVariable("var", M{"hello": "world"})
@@ -2630,7 +2630,7 @@ func TestErrUnsortedSliceDifferentSize(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["A", "B"]`)
+		_, _ = fmt.Fprintf(w, `["A", "B"]`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2655,7 +2655,7 @@ func TestErrUnsortedSliceElementNotFound(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `["A", "B", "C"]`)
+		_, _ = fmt.Fprintf(w, `["A", "B", "C"]`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2681,7 +2681,7 @@ func TestErrPartialMapKeyNotFound(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"key": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"key": "value"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2706,7 +2706,7 @@ func TestErrPartialMapElementDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"key": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"key": "value"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2731,7 +2731,7 @@ func TestErrRegexpFailParsing(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2758,7 +2758,7 @@ func TestErrRegexpNotString(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": 500}`)
+		_, _ = fmt.Fprintf(w, `{"stats": 500}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2785,7 +2785,7 @@ func TestErrRegexpReplaceUnknownVariable(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "hello world"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "hello world"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2812,7 +2812,7 @@ func TestErrRegexpDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2839,7 +2839,7 @@ func TestErrRegexpVarsNotString(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `1000`)
+		_, _ = fmt.Fprintf(w, `1000`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2867,7 +2867,7 @@ func TestErrRegexpVarsFailParsing(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2897,7 +2897,7 @@ func TestErrRegexpVarsDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2927,7 +2927,7 @@ func TestErrRegexpVarsDoesInvalidVarname(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2957,7 +2957,7 @@ func TestErrRegexpVarsOverflowIndexIgnored(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
+		_, _ = fmt.Fprintf(w, `{"stats": "150 - high - end"}`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -2987,7 +2987,7 @@ func TestErrRawUnhandled(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3012,7 +3012,7 @@ func TestErrRawStringDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3037,7 +3037,7 @@ func TestErrRawRegexpFailParsing(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3062,7 +3062,7 @@ func TestErrRawRegexpDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3087,7 +3087,7 @@ func TestErrRawRegexpVarsFailParsing(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3115,7 +3115,7 @@ func TestErrRawRegexpVarsDoesNotMatch(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3143,7 +3143,7 @@ func TestErrRawRegexpVarsInvalidVarname(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3171,7 +3171,7 @@ func TestErrRawRegexpVarsOverflowIndex(t *testing.T) {
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `Hello this is plain text 1234`)
+		_, _ = fmt.Fprintf(w, `Hello this is plain text 1234`)
 	})
 
 	err := c.r.Test(TestCase{
@@ -3200,7 +3200,7 @@ func TestErrMultipleErrors(t *testing.T) {
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("X-Custom", "not right value")
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, `{"key": "value"}`)
+		_, _ = fmt.Fprintf(w, `{"key": "value"}`)
 	})
 
 	err := c.r.Test(TestCase{
