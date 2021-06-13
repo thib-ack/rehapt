@@ -120,7 +120,7 @@ func TestExampleAdvanced(t *testing.T) {
 	}
 
 	// You can also define your own variables
-	r.SetVariable("myvar", M{
+	_ = r.SetVariable("myvar", M{
 		"id":   "55",
 		"name": "John",
 		"age":  51,
@@ -134,7 +134,7 @@ func TestExampleAdvanced(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code:    http.StatusOK,
-			Headers: H{"X-Pet-Type": "Cat"}, // Check for header presence in response
+			Headers: M{"X-Pet-Type": S{"Cat"}}, // Check for header presence in response
 			Object: M{
 				"id":   "_catid_", // Here we load the previously registred var. If does not match with returned value -> error (try to change in example server)
 				"age":  Any,
@@ -164,7 +164,7 @@ func TestExampleInvalidAuth(t *testing.T) {
 		Request: TestRequest{
 			Method:  "GET",
 			Path:    "/api/user",
-			Headers: H{"Authorization": "invalid"},
+			Headers: H{"Authorization": {"invalid"}},
 		},
 		Response: TestResponse{
 			Code: http.StatusUnauthorized,

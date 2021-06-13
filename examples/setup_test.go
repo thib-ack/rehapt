@@ -24,25 +24,25 @@ func httpServer() http.Handler {
 		// This API support only GET
 		if req.Method != "GET" {
 			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprintf(w, `{"error": "not found"}`)
+			_, _ = fmt.Fprintf(w, `{"error": "not found"}`)
 			return
 		}
 
 		// This API requires Auth
 		if u, p, ok := req.BasicAuth(); ok == false || u != "Aladdin" || p != "open sesame" {
 			w.WriteHeader(http.StatusUnauthorized)
-			fmt.Fprintf(w, `{"error": "unauthorized"}`)
+			_, _ = fmt.Fprintf(w, `{"error": "unauthorized"}`)
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"id": "55", "name": "John", "age": 51, "pets": [{"id": "123", "type": "cat", "name": "Pepper the cat"}], "weddingdate": "2019-06-22T16:00:10.123Z"}`)
+		_, _ = fmt.Fprintf(w, `{"id": "55", "name": "John", "age": 51, "pets": [{"id": "123", "type": "cat", "name": "Pepper the cat"}], "weddingdate": "2019-06-22T16:00:10.123Z"}`)
 	})
 
 	mux.HandleFunc("/api/cat/123", func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("X-Pet-Type", "Cat")
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"id": "123", "name": "Pepper the cat", "age": 3, "owner": {"id": "55", "name": "John", "age": 51}, "toys": ["ball", "plastic mouse"]}`)
+		_, _ = fmt.Fprintf(w, `{"id": "123", "name": "Pepper the cat", "age": 3, "owner": {"id": "55", "name": "John", "age": 51}, "toys": ["ball", "plastic mouse"]}`)
 	})
 
 	return mux
