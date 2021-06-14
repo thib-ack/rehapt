@@ -287,7 +287,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	}
 
 	// Add the default headers (if any)
-	request.Header = r.defaultHeaders
+	request.Header = r.defaultHeaders.Clone()
 
 	// Add the testcase defined headers. This overrides any default header previously set
 	for k, values := range testcase.Request.Headers {

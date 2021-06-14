@@ -502,6 +502,31 @@ func TestOKRequestHeader(t *testing.T) {
 	if e := ExpectNil(err); e != "" {
 		t.Error(e)
 	}
+
+	// Now we don't overload the header, the default one should be used again
+	// This test is important because we had an issue where the default header was erased when overloaded
+	c.server.HandleFunc("/api/test2", func(w http.ResponseWriter, req *http.Request) {
+		if expected, actual := "default value", req.Header.Get("X-Custom"); expected != actual {
+			t.Errorf("expected value %v but got %v", expected, actual)
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method:  "POST",
+			Path:    "/api/test2",
+			Body:    nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
 }
 
 func TestOKResponseHeader(t *testing.T) {
