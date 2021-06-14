@@ -287,7 +287,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	}
 
 	// Add the default headers (if any)
-	request.Header = r.defaultHeaders.Clone()
+	request.Header = cloneHeader(r.defaultHeaders)
 
 	// Add the testcase defined headers. This overrides any default header previously set
 	for k, values := range testcase.Request.Headers {
@@ -705,4 +705,18 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 		}
 	}
 	return fmt.Errorf("unhandled type %T", expected)
+}
+
+func cloneHeader(header http.Header) http.Header {
+	// Clone() method of http.Header is available only since 1.13
+	if header == nil {
+		return nil
+	}
+	clone := make(http.Header, len(header))
+	for k, v := range header {
+		sl := make([]string, len(v))
+		copy(sl, v)
+		clone[k] = sl
+	}
+	return clone
 }
