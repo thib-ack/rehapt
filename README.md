@@ -1,5 +1,5 @@
 
-# rehapt <a href="https://travis-ci.org/thib-ack/rehapt"><img src="https://travis-ci.org/thib-ack/rehapt.svg?branch=master"></a> <a href='https://coveralls.io/github/thib-ack/rehapt'><img src='https://coveralls.io/repos/github/thib-ack/rehapt/badge.svg' alt='Coverage Status' /></a> <a href="https://goreportcard.com/report/github.com/thib-ack/rehapt"><img src="https://goreportcard.com/badge/github.com/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
+# rehapt [![Build Status](https://travis-ci.com/thib-ack/rehapt.svg?branch=master)](https://travis-ci.com/thib-ack/rehapt) <a href='https://coveralls.io/github/thib-ack/rehapt'><img src='https://coveralls.io/repos/github/thib-ack/rehapt/badge.svg' alt='Coverage Status' /></a> <a href="https://goreportcard.com/report/github.com/thib-ack/rehapt"><img src="https://goreportcard.com/badge/github.com/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
 
 Rehapt is a Golang declarative REST HTTP API testing library.
 You describe how you expect your HTTP API to behave and the library take care of comparing the expected and actual response elements.
@@ -102,13 +102,13 @@ func TestAPIAdvanced(t *testing.T) {
         Request: TestRequest{
             Method: "GET",
             // Add headers to request. (default headers are also supported)
-            Headers: H{"X-Custom": "my value"}, 
+            Headers: H{"X-Custom": []string{"my value"}},
             Path:   "/api/user/1",
         },
         Response: TestResponse{
             Code: http.StatusOK,
             // Check for headers presence in response
-            Headers: H{"X-Pet-Type": "Cat"},
+            Headers: PartialM{"X-Pet-Type": S{"Cat"}},
             Object: M{
                 "id":   "1",
                 // We can ignore a specific field
