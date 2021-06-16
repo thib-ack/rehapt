@@ -408,8 +408,8 @@ func TestOKRequestPathLoadVarShortcutBodyNoReplacement(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method: "POST",
-			Path:   "/api/_catid_",
+			Method:                    "POST",
+			Path:                      "/api/_catid_",
 			NoPathVariableReplacement: true,
 		},
 		Response: TestResponse{
@@ -543,9 +543,9 @@ func TestOKRequestRawLoadVarShortcutBodyNoReplacement(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:  "POST",
-			Path:    "/api/test",
-			RawBody: strings.NewReader("The cat _catid_ won"),
+			Method:                       "POST",
+			Path:                         "/api/test",
+			RawBody:                      strings.NewReader("The cat _catid_ won"),
 			NoRawBodyVariableReplacement: true,
 		},
 		Response: TestResponse{
@@ -694,9 +694,9 @@ func TestOKRequestHeaderLoadVarShortcutNoReplacement(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:  "POST",
-			Path:    "/api/test",
-			Headers: H{"_hdr_": {"_catid_"}},
+			Method:                       "POST",
+			Path:                         "/api/test",
+			Headers:                      H{"_hdr_": {"_catid_"}},
 			NoHeadersVariableReplacement: true,
 		},
 		Response: TestResponse{
