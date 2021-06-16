@@ -1,10 +1,11 @@
 package examples
 
 import (
-	. "github.com/thib-ack/rehapt"
 	"net/http"
 	"testing"
 	"time"
+
+	. "github.com/thib-ack/rehapt"
 )
 
 func TestExampleSimple(t *testing.T) {

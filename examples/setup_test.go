@@ -2,9 +2,10 @@ package examples
 
 import (
 	"fmt"
-	"github.com/thib-ack/rehapt"
 	"net/http"
 	"testing"
+
+	"github.com/thib-ack/rehapt"
 )
 
 // We create our Rehapt instance with little customization for tests

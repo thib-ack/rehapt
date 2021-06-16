@@ -260,6 +260,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	}
 
 	var body io.Reader
+	var err error
 	// If a body has been defined, then marshal it
 	if testcase.Request.Body != nil {
 		bodyData, err := r.marshaler(testcase.Request.Body)
@@ -268,16 +269,31 @@ func (r *Rehapt) Test(testcase TestCase) error {
 		}
 		body = bytes.NewBuffer(bodyData)
 
-	} else if testcase.Request.Raw != nil {
-		// If a raw body has been defined use it as-is
-		body = testcase.Request.Raw
+	} else if testcase.Request.RawBody != nil {
+		// If a raw body has been defined use it as-is (no marshal operation)
+		// unless variable replacement is allowed
+		if testcase.Request.NoRawBodyVariableReplacement == true {
+			body = testcase.Request.RawBody
+		} else {
+			// This could be optimized
+			rawBody, err := ioutil.ReadAll(testcase.Request.RawBody)
+			if err != nil {
+				return fmt.Errorf("error while reading raw body. %v", err)
+			}
+			rawBodyStr, err := r.replaceVars(string(rawBody))
+			if err != nil {
+				return fmt.Errorf("error while replacing variables in raw body. %v", err)
+			}
+			body = bytes.NewBufferString(rawBodyStr)
+		}
 	}
 
 	// The path might contains a variable reference (like _xx_). we have to replace it.
-	var err error
-	testcase.Request.Path, err = r.replaceVars(testcase.Request.Path)
-	if err != nil {
-		return fmt.Errorf("error while replacing variables in path. %v", err)
+	if testcase.Request.NoPathVariableReplacement == false {
+		testcase.Request.Path, err = r.replaceVars(testcase.Request.Path)
+		if err != nil {
+			return fmt.Errorf("error while replacing variables in path. %v", err)
+		}
 	}
 
 	// Now start to build the HTTP request
@@ -291,15 +307,19 @@ func (r *Rehapt) Test(testcase TestCase) error {
 
 	// Add the testcase defined headers. This overrides any default header previously set
 	for k, values := range testcase.Request.Headers {
-		k, err = r.replaceVars(k)
-		if err != nil {
-			return fmt.Errorf("error while replacing variables in header name. %v", err)
+		if testcase.Request.NoHeadersVariableReplacement == false {
+			k, err = r.replaceVars(k)
+			if err != nil {
+				return fmt.Errorf("error while replacing variables in header name. %v", err)
+			}
 		}
 		request.Header.Del(k)
 		for _, value := range values {
-			value, err = r.replaceVars(value)
-			if err != nil {
-				return fmt.Errorf("error while replacing variables in header value. %v", err)
+			if testcase.Request.NoHeadersVariableReplacement == false {
+				value, err = r.replaceVars(value)
+				if err != nil {
+					return fmt.Errorf("error while replacing variables in header value. %v", err)
+				}
 			}
 			request.Header.Add(k, value)
 		}
@@ -334,8 +354,8 @@ func (r *Rehapt) Test(testcase TestCase) error {
 
 	// Want a raw comparison ?
 	// This is useful if response cannot be unmarshal. (for example simple plain/text output)
-	if testcase.Response.Raw != nil {
-		if err := r.compare(testcase.Response.Raw, recorder.Body.String()); err != nil {
+	if testcase.Response.RawBody != nil {
+		if err := r.compare(testcase.Response.RawBody, recorder.Body.String()); err != nil {
 			bodyError = err
 		}
 

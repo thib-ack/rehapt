@@ -21,11 +21,14 @@ type TestCase struct {
 
 // TestRequest describe the request to be executed
 type TestRequest struct {
-	Method  string
-	Path    string
-	Headers H
-	Body    interface{}
-	Raw     io.Reader
+	Method                       string
+	Path                         string
+	Headers                      H
+	Body                         interface{}
+	RawBody                      io.Reader
+	NoPathVariableReplacement    bool
+	NoHeadersVariableReplacement bool
+	NoRawBodyVariableReplacement bool
 }
 
 // TestResponse describe the response expected
@@ -33,7 +36,7 @@ type TestResponse struct {
 	Headers interface{}
 	Code    int
 	Object  interface{}
-	Raw     interface{}
+	RawBody interface{}
 }
 
 // H declare a Headers map.

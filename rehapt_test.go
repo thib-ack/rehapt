@@ -3,12 +3,13 @@ package rehapt_test
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/thib-ack/rehapt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
 	"time"
+
+	. "github.com/thib-ack/rehapt"
 )
 
 type testContext struct {
@@ -371,6 +372,57 @@ func TestOKUnsortedSliceResponseObject(t *testing.T) {
 	}
 }
 
+func TestOKRequestPathLoadVarShortcut(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/123", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	})
+
+	_ = c.r.SetVariable("catid", "123")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/_catid_",
+		},
+		Response: TestResponse{
+			Code:   http.StatusAccepted,
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKRequestPathLoadVarShortcutBodyNoReplacement(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/_catid_", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	})
+
+	_ = c.r.SetVariable("catid", "123")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/_catid_",
+			NoPathVariableReplacement: true,
+		},
+		Response: TestResponse{
+			Code:   http.StatusAccepted,
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestOKRequestObjectBody(t *testing.T) {
 	c := setupTest(t)
 
@@ -423,9 +475,78 @@ func TestOKRequestRawBody(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method: "POST",
-			Path:   "/api/test",
-			Raw:    strings.NewReader("This is a raw plain/text body"),
+			Method:  "POST",
+			Path:    "/api/test",
+			RawBody: strings.NewReader("This is a raw plain/text body"),
+		},
+		Response: TestResponse{
+			Code:   http.StatusAccepted,
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKRequestRawBodyLoadVarShortcut(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if expected, actual := "The cat 123 won", string(body); expected != actual {
+			t.Errorf("expected value %v but got %v", expected, actual)
+		}
+	})
+
+	_ = c.r.SetVariable("catid", "123")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method:  "POST",
+			Path:    "/api/test",
+			RawBody: strings.NewReader("The cat _catid_ won"),
+		},
+		Response: TestResponse{
+			Code:   http.StatusAccepted,
+			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKRequestRawLoadVarShortcutBodyNoReplacement(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if expected, actual := "The cat _catid_ won", string(body); expected != actual {
+			t.Errorf("expected value %v but got %v", expected, actual)
+		}
+	})
+
+	_ = c.r.SetVariable("catid", "123")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method:  "POST",
+			Path:    "/api/test",
+			RawBody: strings.NewReader("The cat _catid_ won"),
+			NoRawBodyVariableReplacement: true,
 		},
 		Response: TestResponse{
 			Code:   http.StatusAccepted,
@@ -514,13 +635,72 @@ func TestOKRequestHeader(t *testing.T) {
 
 	err = c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:  "POST",
-			Path:    "/api/test2",
-			Body:    nil,
+			Method: "POST",
+			Path:   "/api/test2",
+			Body:   nil,
 		},
 		Response: TestResponse{
 			Code:   http.StatusOK,
 			Object: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKRequestHeaderLoadVarShortcut(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		if expected, actual := "123", req.Header.Get("X-Header"); expected != actual {
+			t.Errorf("expected value %v but got %v", expected, actual)
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+
+	_ = c.r.SetVariable("hdr", "X-Header")
+	_ = c.r.SetVariable("catid", "123")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method:  "POST",
+			Path:    "/api/test",
+			Headers: H{"_hdr_": {"_catid_"}},
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKRequestHeaderLoadVarShortcutNoReplacement(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		if expected, actual := "_catid_", req.Header.Get("_hdr_"); expected != actual {
+			t.Errorf("expected value %v but got %v", expected, actual)
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+
+	_ = c.r.SetVariable("hdr", "X-Header")
+	_ = c.r.SetVariable("catid", "123")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method:  "POST",
+			Path:    "/api/test",
+			Headers: H{"_hdr_": {"_catid_"}},
+			NoHeadersVariableReplacement: true,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
 		},
 	})
 
@@ -632,8 +812,8 @@ func TestOKResponseRawStringBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			Raw:  "Hello this is plain text",
+			Code:    http.StatusOK,
+			RawBody: "Hello this is plain text",
 		},
 	})
 
@@ -657,8 +837,8 @@ func TestOKResponseRawStoreVarShortcutBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			Raw:  "$body$",
+			Code:    http.StatusOK,
+			RawBody: "$body$",
 		},
 	})
 
@@ -686,8 +866,8 @@ func TestOKResponseRawRegexpBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			Raw:  Regexp(`^H[a-z ]+ [0-9]+$`),
+			Code:    http.StatusOK,
+			RawBody: Regexp(`^H[a-z ]+ [0-9]+$`),
 		},
 	})
 
@@ -712,7 +892,7 @@ func TestOKResponseRawRegexpVarsBody(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Raw: RegexpVars{
+			RawBody: RegexpVars{
 				Regexp: `^H[a-z ]+ ([0-9]+)$`,
 				Vars:   map[int]string{1: "counter"},
 			},
@@ -3022,8 +3202,8 @@ func TestErrRawUnhandled(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			Raw:  1234,
+			Code:    http.StatusOK,
+			RawBody: 1234,
 		},
 	})
 
@@ -3047,8 +3227,8 @@ func TestErrRawStringDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			Raw:  "Hello this is plain text",
+			Code:    http.StatusOK,
+			RawBody: "Hello this is plain text",
 		},
 	})
 
@@ -3072,8 +3252,8 @@ func TestErrRawRegexpFailParsing(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			Raw:  Regexp(`^H[a-z ]+ ([0-9]+$`),
+			Code:    http.StatusOK,
+			RawBody: Regexp(`^H[a-z ]+ ([0-9]+$`),
 		},
 	})
 
@@ -3097,8 +3277,8 @@ func TestErrRawRegexpDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			Raw:  Regexp(`^H[a-z ]+ [0-9]$`),
+			Code:    http.StatusOK,
+			RawBody: Regexp(`^H[a-z ]+ [0-9]$`),
 		},
 	})
 
@@ -3123,7 +3303,7 @@ func TestErrRawRegexpVarsFailParsing(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Raw: RegexpVars{
+			RawBody: RegexpVars{
 				Regexp: `^H[a-z ]+ ([0-9]+$`,
 				Vars:   map[int]string{1: "counter"},
 			},
@@ -3151,7 +3331,7 @@ func TestErrRawRegexpVarsDoesNotMatch(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Raw: RegexpVars{
+			RawBody: RegexpVars{
 				Regexp: `^H[a-z ]+ ([0-9])$`,
 				Vars:   map[int]string{1: "counter"},
 			},
@@ -3179,7 +3359,7 @@ func TestErrRawRegexpVarsInvalidVarname(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Raw: RegexpVars{
+			RawBody: RegexpVars{
 				Regexp: `^H[a-z ]+ ([0-9]+)$`,
 				Vars:   map[int]string{1: "counter 1"},
 			},
@@ -3207,7 +3387,7 @@ func TestErrRawRegexpVarsOverflowIndex(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Raw: RegexpVars{
+			RawBody: RegexpVars{
 				Regexp: `^H[a-z ]+ ([0-9]+)$`,
 				Vars:   map[int]string{2: "counter"},
 			},
