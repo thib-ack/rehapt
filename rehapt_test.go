@@ -408,8 +408,8 @@ func TestOKRequestPathLoadVarShortcutBodyNoReplacement(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:                    "POST",
-			Path:                      "/api/_catid_",
+			Method: "POST",
+			Path:   "/api/_catid_",
 			NoPathVariableReplacement: true,
 		},
 		Response: TestResponse{
@@ -543,9 +543,9 @@ func TestOKRequestRawLoadVarShortcutBodyNoReplacement(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:                       "POST",
-			Path:                         "/api/test",
-			RawBody:                      strings.NewReader("The cat _catid_ won"),
+			Method:  "POST",
+			Path:    "/api/test",
+			RawBody: strings.NewReader("The cat _catid_ won"),
 			NoRawBodyVariableReplacement: true,
 		},
 		Response: TestResponse{
@@ -694,9 +694,9 @@ func TestOKRequestHeaderLoadVarShortcutNoReplacement(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:                       "POST",
-			Path:                         "/api/test",
-			Headers:                      H{"_hdr_": {"_catid_"}},
+			Method:  "POST",
+			Path:    "/api/test",
+			Headers: H{"_hdr_": {"_catid_"}},
 			NoHeadersVariableReplacement: true,
 		},
 		Response: TestResponse{
@@ -1853,6 +1853,35 @@ func TestErrNilHTTPHandler(t *testing.T) {
 	if e := ExpectError(err, `nil HTTP handler`); e != "" {
 		t.Error(e)
 	}
+}
+
+func TestErrNilErrorHandler(t *testing.T) {
+	server := http.NewServeMux()
+
+	c := &testContext{
+		r:      NewRehapt(nil, server),
+		server: server,
+	}
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"ok"`)
+	})
+
+	c.r.TestAssert(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: "KO",
+		},
+	})
+
+	// No easy way to check stdout, but at least we make sure the TestAssert() function
+	// does not crash when errorHandler is nil
 }
 
 func TestErrMissingHTTPMethod(t *testing.T) {
