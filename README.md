@@ -122,7 +122,8 @@ func TestAPIAdvanced(t *testing.T) {
                         "id":   "2",
                         // We can expect with regexp
                         "name": Regexp(`[A-Za-z]+ the cat`),
-                        "type": "cat",
+                        // We can unexpect a value
+                        "type": Not{"dog"},
                         // We can expect a slice without order constraint
                         // here, ["mouse", "ball"] and ["ball", "mouse"] are valid responses
                         "toys": UnsortedS{"mouse", "ball"},
