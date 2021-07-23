@@ -560,6 +560,11 @@ func (r *Rehapt) initComparators() {
 	r.comparators = []comparator{
 		{
 			ExpectedKind: reflect.Struct,
+			ExpectedType: reflect.TypeOf(Not{}),
+			Compare:      r.notCompare,
+		},
+		{
+			ExpectedKind: reflect.Struct,
 			ExpectedType: reflect.TypeOf(TimeDelta{}),
 			Compare:      r.timeDeltaCompare,
 		},

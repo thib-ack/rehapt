@@ -137,7 +137,7 @@ nextExpected:
 			actualElement := ctx.ActualValue.Index(idx)
 
 			if err := r.compare(expectedElement.Interface(), actualElement.Interface()); err == nil {
-				// Thats a match, ignore this index now, and continue to next expected.
+				// That's a match, ignore this index now, and continue to next expected.
 				actualIndexes = append(actualIndexes[:j], actualIndexes[j+1:]...)
 				continue nextExpected
 			}
@@ -346,6 +346,22 @@ func (r *Rehapt) boolCompare(ctx compareCtx) error {
 	// classic comparison
 	if expectedBool != actualBool {
 		return fmt.Errorf("bools does not match. Expected %v, got %v", expectedBool, actualBool)
+	}
+	return nil
+}
+
+func (r *Rehapt) notCompare(ctx compareCtx) error {
+	not, ok := ctx.Expected.(Not)
+	if ok == false {
+		// This should never happened because we normally
+		// arrive here only when ExpectedType is Not
+		panic("Expected is not Not")
+	}
+
+	// Normal comparison, but error means ok and no error means error
+	err := r.compare(not.Value, ctx.Actual)
+	if err == nil {
+		return fmt.Errorf("expected not %v, got %v", not.Value, ctx.Actual)
 	}
 	return nil
 }

@@ -259,6 +259,99 @@ func TestOKFloatResponseObject(t *testing.T) {
 	}
 }
 
+func TestOKNotResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `10`)
+	})
+	c.server.HandleFunc("/api/test-str", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"hello"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Not{15},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Not{"world"},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-str",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Not{"world"},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-str",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Not{false},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-str",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Not{10.0},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestOKMapResponseObject(t *testing.T) {
 	c := setupTest(t)
 
@@ -2168,6 +2261,51 @@ func TestErrBoolResponseObject(t *testing.T) {
 	})
 
 	if e := ExpectError(err, `bools does not match. Expected false, got true`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrNotResponseObject(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `10`)
+	})
+	c.server.HandleFunc("/api/test-str", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"hello"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Not{10},
+		},
+	})
+
+	if e := ExpectError(err, `expected not 10, got 10`); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-str",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:   http.StatusOK,
+			Object: Not{"hello"},
+		},
+	})
+
+	if e := ExpectError(err, `expected not hello, got hello`); e != "" {
 		t.Error(e)
 	}
 }

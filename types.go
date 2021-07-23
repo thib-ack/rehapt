@@ -84,6 +84,12 @@ type RegexpVars struct {
 	Vars   map[int]string
 }
 
+// Not means we don't expect the given value
+// it works as a boolean 'not' operator on the comparison
+type Not struct {
+	Value interface{}
+}
+
 // NumberDelta allow to expect number value with a given +/- delta.
 // Delta is compared to math.Abs(expected - actual) which explain why
 // if your expected value is 10 with a delta of 3, actual value will match from 7 to 13.
