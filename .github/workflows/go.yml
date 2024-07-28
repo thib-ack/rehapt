@@ -66,6 +66,7 @@ jobs:
     strategy:
       matrix:
         go-version:
+          - "1.8"
           - "1.7"
 
     steps:
@@ -93,13 +94,4 @@ jobs:
         run: go build -v github.com/thib-ack/rehapt
 
       - name: Test
-        run: go test -v -race -covermode atomic -coverprofile=covprofile
-        #working-directory: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
-
-      - name: Install goveralls
-        run: go install github.com/mattn/goveralls@latest
-
-      - name: Send coverage
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=covprofile -service=github
+        run: go test -v -race

@@ -2109,6 +2109,7 @@ func TestErrNilErrorHandler(t *testing.T) {
 		_, _ = fmt.Fprintf(w, `"ok"`)
 	})
 
+	// The reported error on stdout here is expected
 	c.r.TestAssert(TestCase{
 		Request: TestRequest{
 			Method: "GET",
