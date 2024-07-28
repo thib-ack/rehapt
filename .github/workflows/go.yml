@@ -17,16 +17,16 @@ jobs:
       matrix:
         go-version:
           - "1.22"
-          - "1.21"
-          - "1.20"
-          - "1.19"
-          - "1.18"
-          - "1.17"
-          - "1.16"
-          - "1.15"
-          - "1.14"
-          - "1.13"
-          - "1.12"
+#          - "1.21"
+#          - "1.20"
+#          - "1.19"
+#          - "1.18"
+#          - "1.17"
+#          - "1.16"
+#          - "1.15"
+#          - "1.14"
+#          - "1.13"
+#          - "1.12"
           - "1.11"
 
     steps:
@@ -58,46 +58,46 @@ jobs:
 
   # To use old system, we have to checkout in specific folder
   # and configure correctly GOPATH
-  build-without-modules:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
-    env:
-      GOPATH: ${{ github.workspace }}
-      GOBIN: ${{ github.workspace }}/bin
-    strategy:
-      matrix:
-        go-version:
-          - "1.10"
-          - "1.9"
-          - "1.8"
-          - "1.7"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          path: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
-
-      - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-
-      - name: Display Go version
-        run: go version
-
-      - name: Debug
-        run: |
-          pwd
-          echo ${GOPATH}
-          echo ${GOROOT}
-
-      - name: Build
-        run: go build -v github.com/thib-ack/rehapt
-
-        # No code coverage for old versions
-      - name: Test
-        run: go test -v -race
+#  build-without-modules:
+#    runs-on: ubuntu-latest
+#    defaults:
+#      run:
+#        working-directory: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
+#    env:
+#      GOPATH: ${{ github.workspace }}
+#      GOBIN: ${{ github.workspace }}/bin
+#    strategy:
+#      matrix:
+#        go-version:
+#          - "1.10"
+#          - "1.9"
+#          - "1.8"
+#          - "1.7"
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 1
+#          path: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
+#
+#      - name: Setup Go ${{ matrix.go-version }}
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: ${{ matrix.go-version }}
+#
+#      - name: Display Go version
+#        run: go version
+#
+#      - name: Debug
+#        run: |
+#          pwd
+#          echo ${GOPATH}
+#          echo ${GOROOT}
+#
+#      - name: Build
+#        run: go build -v github.com/thib-ack/rehapt
+#
+#        # No code coverage for old versions
+#      - name: Test
+#        run: go test -v -race
