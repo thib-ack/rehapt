@@ -24,8 +24,8 @@ func httpServer() http.Handler {
 	mux.HandleFunc("/api/user", func(w http.ResponseWriter, req *http.Request) {
 		// This API support only GET
 		if req.Method != "GET" {
-			w.WriteHeader(http.StatusNotFound)
-			_, _ = fmt.Fprintf(w, `{"error": "not found"}`)
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			_, _ = fmt.Fprintf(w, `{"error": "method not allowed"}`)
 			return
 		}
 

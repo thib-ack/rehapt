@@ -13,7 +13,7 @@ func TestExampleSimple(t *testing.T) {
 
 	// Each testcase consist of a description of the request to execute
 	// and a description of the expected response
-	// By default the response description is exhaustive. if a actual response field is not listed, an error will be triggered.
+	// By default the response description is exhaustive. if an actual response field is not listed, an error will be triggered.
 	// of course if an expected field described here is not present in response, an error will be triggered too.
 	r.TestAssert(TestCase{
 		Request: TestRequest{
@@ -22,7 +22,7 @@ func TestExampleSimple(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"id":   "55",
 				"name": "John",
 				"age":  51,
@@ -51,7 +51,7 @@ func TestExampleChained(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"id":   "55",
 				"name": "John",
 				"age":  51,
@@ -74,7 +74,7 @@ func TestExampleChained(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"id":   "123",
 				"name": "Pepper the cat",
 				"age":  3,
@@ -100,17 +100,17 @@ func TestExampleAdvanced(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"id":   StoreVar("id"),
-				"name": "John",
+				"name": Or("John", "Tom"),
 				"age":  StoreVar("age"), // StoreVar works on any actual type (int here) not only strings
 				"pets": S{
 					PartialM{ // A partial map ignores unlisted field instead of reporting errors
-						"id":   "$catid$", // We dont compare but register the cat ID returned here
-						"type": Any,       // We ignore this field
+						"id":   And(StoreVar("catid"), "123"), // We don't compare but register the cat ID returned here
+						"type": Any(),                         // We ignore this field
 					},
 				},
-				"weddingdate": TimeDelta{Time: time.Date(2019, time.June, 22, 16, 0, 0, 0, time.UTC), Delta: 20 * time.Second}, // We can compare dates with delta
+				"weddingdate": TimeDelta(time.Date(2019, time.June, 22, 16, 0, 0, 0, time.UTC), 20*time.Second), // We can compare dates with delta
 			},
 		},
 	})
@@ -136,10 +136,10 @@ func TestExampleAdvanced(t *testing.T) {
 		Response: TestResponse{
 			Code:    http.StatusOK,
 			Headers: M{"X-Pet-Type": S{"Cat"}}, // Check for header presence in response
-			Object: M{
-				"id":   "_catid_", // Here we load the previously registred var. If does not match with returned value -> error (try to change in example server)
-				"age":  Any,
-				"name": RegexpVars{Regexp: `(.*) the cat`, Vars: map[int]string{1: "catname"}}, // We can store vars using regexp groups
+			Body: M{
+				"id":   "_catid_", // Here we load the previously registred var. If it does not match with returned value -> error (try to change in example server)
+				"age":  Any(),
+				"name": RegexpVars(`(.*) the cat`, map[int]string{1: "catname"}), // We can store vars using regexp groups
 				"toys": S{
 					"ball",
 					Regexp(`^plastic .*$`), // We can compare with regexp
@@ -169,7 +169,7 @@ func TestExampleInvalidAuth(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusUnauthorized,
-			Object: M{
+			Body: M{
 				"error": "unauthorized",
 			},
 		},

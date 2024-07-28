@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -63,7 +62,7 @@ func (t *testingT) Errorf(format string, args ...interface{}) {
 // Now finally our tests
 // Begin with valid cases
 
-func TestOKStringResponseObject(t *testing.T) {
+func TestOKStringResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -78,8 +77,8 @@ func TestOKStringResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: "ok",
+			Code: http.StatusOK,
+			Body: "ok",
 		},
 	})
 
@@ -88,7 +87,7 @@ func TestOKStringResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKBoolResponseObject(t *testing.T) {
+func TestOKBoolResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -103,8 +102,8 @@ func TestOKBoolResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: true,
+			Code: http.StatusOK,
+			Body: true,
 		},
 	})
 
@@ -113,7 +112,7 @@ func TestOKBoolResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKIntResponseObject(t *testing.T) {
+func TestOKIntResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -128,8 +127,8 @@ func TestOKIntResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: 10,
+			Code: http.StatusOK,
+			Body: 10,
 		},
 	})
 
@@ -144,8 +143,8 @@ func TestOKIntResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: uint(10),
+			Code: http.StatusOK,
+			Body: uint(10),
 		},
 	})
 
@@ -160,8 +159,8 @@ func TestOKIntResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: 10.0,
+			Code: http.StatusOK,
+			Body: 10.0,
 		},
 	})
 
@@ -176,8 +175,8 @@ func TestOKIntResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: int64(10),
+			Code: http.StatusOK,
+			Body: int64(10),
 		},
 	})
 
@@ -186,7 +185,7 @@ func TestOKIntResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKFloatResponseObject(t *testing.T) {
+func TestOKFloatResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -201,8 +200,8 @@ func TestOKFloatResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: 10.0,
+			Code: http.StatusOK,
+			Body: 10.0,
 		},
 	})
 
@@ -217,8 +216,8 @@ func TestOKFloatResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: uint(10),
+			Code: http.StatusOK,
+			Body: uint(10),
 		},
 	})
 
@@ -233,8 +232,8 @@ func TestOKFloatResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: 10,
+			Code: http.StatusOK,
+			Body: 10,
 		},
 	})
 
@@ -249,8 +248,8 @@ func TestOKFloatResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: int64(10),
+			Code: http.StatusOK,
+			Body: int64(10),
 		},
 	})
 
@@ -259,7 +258,7 @@ func TestOKFloatResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKNotResponseObject(t *testing.T) {
+func TestOKNotResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -278,8 +277,8 @@ func TestOKNotResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Not{15},
+			Code: http.StatusOK,
+			Body: Not(15),
 		},
 	})
 
@@ -294,8 +293,8 @@ func TestOKNotResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Not{"world"},
+			Code: http.StatusOK,
+			Body: Not("world"),
 		},
 	})
 
@@ -310,8 +309,8 @@ func TestOKNotResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Not{"world"},
+			Code: http.StatusOK,
+			Body: Not("world"),
 		},
 	})
 
@@ -326,8 +325,8 @@ func TestOKNotResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Not{false},
+			Code: http.StatusOK,
+			Body: Not(false),
 		},
 	})
 
@@ -342,8 +341,8 @@ func TestOKNotResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Not{10.0},
+			Code: http.StatusOK,
+			Body: Not(10.0),
 		},
 	})
 
@@ -352,7 +351,93 @@ func TestOKNotResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKMapResponseObject(t *testing.T) {
+func TestOKAndResponseBody(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"hello"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: And("hello", Regexp("h...o")),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: And(StoreVar("v"), "hello"),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	if c.r.GetVariableString("v") == "" {
+		t.Error("missing cat ID")
+	}
+}
+
+func TestOKOrResponseBody(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"hello"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: Or("hello", "world"),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: Or("world", "hello"),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKMapResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -368,7 +453,7 @@ func TestOKMapResponseObject(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"name": "John",
 				"Age":  51,
 			},
@@ -380,7 +465,7 @@ func TestOKMapResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKPartialMapResponseObject(t *testing.T) {
+func TestOKPartialMapResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -396,7 +481,7 @@ func TestOKPartialMapResponseObject(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: PartialM{
+			Body: PartialM{
 				"name": "John",
 			},
 		},
@@ -407,7 +492,7 @@ func TestOKPartialMapResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKSliceResponseObject(t *testing.T) {
+func TestOKSliceResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -423,7 +508,7 @@ func TestOKSliceResponseObject(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: S{
+			Body: S{
 				"John",
 				"Doe",
 				99,
@@ -436,7 +521,7 @@ func TestOKSliceResponseObject(t *testing.T) {
 	}
 }
 
-func TestOKUnsortedSliceResponseObject(t *testing.T) {
+func TestOKUnsortedSliceResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -452,7 +537,7 @@ func TestOKUnsortedSliceResponseObject(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: UnsortedS{
+			Body: UnsortedS{
 				"Doe",
 				99,
 				"John",
@@ -480,8 +565,8 @@ func TestOKRequestPathLoadVarShortcut(t *testing.T) {
 			Path:   "/api/_catid_",
 		},
 		Response: TestResponse{
-			Code:   http.StatusAccepted,
-			Object: nil,
+			Code: http.StatusAccepted,
+			Body: nil,
 		},
 	})
 
@@ -490,7 +575,7 @@ func TestOKRequestPathLoadVarShortcut(t *testing.T) {
 	}
 }
 
-func TestOKRequestPathLoadVarShortcutBodyNoReplacement(t *testing.T) {
+func TestOKRequestPathNoReplacement(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/_catid_", func(w http.ResponseWriter, req *http.Request) {
@@ -502,12 +587,11 @@ func TestOKRequestPathLoadVarShortcutBodyNoReplacement(t *testing.T) {
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
 			Method: "POST",
-			Path:   "/api/_catid_",
-			NoPathVariableReplacement: true,
+			Path:   NoReplacement("/api/_catid_"),
 		},
 		Response: TestResponse{
-			Code:   http.StatusAccepted,
-			Object: nil,
+			Code: http.StatusAccepted,
+			Body: nil,
 		},
 	})
 
@@ -516,7 +600,26 @@ func TestOKRequestPathLoadVarShortcutBodyNoReplacement(t *testing.T) {
 	}
 }
 
-func TestOKRequestObjectBody(t *testing.T) {
+func TestOKRequestPathInvalidType(t *testing.T) {
+	c := setupTest(t)
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   1234,
+		},
+		Response: TestResponse{
+			Code: http.StatusAccepted,
+			Body: nil,
+		},
+	})
+
+	if e := ExpectError(err, "invalid path type int, only string or rehapt.ReplaceFn supported"); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKRequestBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -541,8 +644,8 @@ func TestOKRequestObjectBody(t *testing.T) {
 			},
 		},
 		Response: TestResponse{
-			Code:   http.StatusAccepted,
-			Object: nil,
+			Code: http.StatusAccepted,
+			Body: nil,
 		},
 	})
 
@@ -568,13 +671,31 @@ func TestOKRequestRawBody(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:  "POST",
-			Path:    "/api/test",
-			RawBody: strings.NewReader("This is a raw plain/text body"),
+			Method:        "POST",
+			Path:          "/api/test",
+			BodyMarshaler: RawMarshaler,
+			Body:          "This is a raw plain/text body",
 		},
 		Response: TestResponse{
-			Code:   http.StatusAccepted,
-			Object: nil,
+			Code: http.StatusAccepted,
+			Body: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method:        "POST",
+			Path:          "/api/test",
+			BodyMarshaler: RawMarshaler,
+			Body:          []byte("This is a raw plain/text body"),
+		},
+		Response: TestResponse{
+			Code: http.StatusAccepted,
+			Body: nil,
 		},
 	})
 
@@ -602,13 +723,14 @@ func TestOKRequestRawBodyLoadVarShortcut(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:  "POST",
-			Path:    "/api/test",
-			RawBody: strings.NewReader("The cat _catid_ won"),
+			Method:        "POST",
+			Path:          "/api/test",
+			BodyMarshaler: RawMarshaler,
+			Body:          c.r.ReplaceVars("The cat _catid_ won"),
 		},
 		Response: TestResponse{
-			Code:   http.StatusAccepted,
-			Object: nil,
+			Code: http.StatusAccepted,
+			Body: nil,
 		},
 	})
 
@@ -636,14 +758,14 @@ func TestOKRequestRawLoadVarShortcutBodyNoReplacement(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:  "POST",
-			Path:    "/api/test",
-			RawBody: strings.NewReader("The cat _catid_ won"),
-			NoRawBodyVariableReplacement: true,
+			Method:        "POST",
+			Path:          "/api/test",
+			BodyMarshaler: RawMarshaler,
+			Body:          "The cat _catid_ won",
 		},
 		Response: TestResponse{
-			Code:   http.StatusAccepted,
-			Object: nil,
+			Code: http.StatusAccepted,
+			Body: nil,
 		},
 	})
 
@@ -677,8 +799,44 @@ func TestOKDefaultRequestHeader(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKDefaultRequestHeaders(t *testing.T) {
+	c := setupTest(t)
+
+	// Set the default headers (will be set for all requests)
+	c.r.SetDefaultHeaders(http.Header{"X-Custom": []string{"custom value 123"}})
+
+	// We can check its value too
+	headers := c.r.GetDefaultHeaders()
+	if actual, expected := headers.Get("X-Custom"), "custom value 123"; actual != expected {
+		t.Errorf("expected value %v but got %v", expected, actual)
+	}
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		if expected, actual := "custom value 123", req.Header.Get("X-Custom"); expected != actual {
+			t.Errorf("expected value %v but got %v", expected, actual)
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "POST",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -708,8 +866,8 @@ func TestOKRequestHeader(t *testing.T) {
 			Body:    nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -733,8 +891,8 @@ func TestOKRequestHeader(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -743,7 +901,7 @@ func TestOKRequestHeader(t *testing.T) {
 	}
 }
 
-func TestOKRequestHeaderLoadVarShortcut(t *testing.T) {
+func TestOKRequestHeaderGetVariable(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -758,9 +916,11 @@ func TestOKRequestHeaderLoadVarShortcut(t *testing.T) {
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
-			Method:  "POST",
-			Path:    "/api/test",
-			Headers: H{"_hdr_": {"_catid_"}},
+			Method: "POST",
+			Path:   "/api/test",
+			Headers: H{
+				c.r.GetVariableString("hdr"): {c.r.GetVariableString("catid")},
+			},
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
@@ -772,7 +932,7 @@ func TestOKRequestHeaderLoadVarShortcut(t *testing.T) {
 	}
 }
 
-func TestOKRequestHeaderLoadVarShortcutNoReplacement(t *testing.T) {
+func TestOKRequestHeaderNoReplacement(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -790,7 +950,6 @@ func TestOKRequestHeaderLoadVarShortcutNoReplacement(t *testing.T) {
 			Method:  "POST",
 			Path:    "/api/test",
 			Headers: H{"_hdr_": {"_catid_"}},
-			NoHeadersVariableReplacement: true,
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
@@ -821,7 +980,7 @@ func TestOKResponseHeader(t *testing.T) {
 			Headers: H{
 				"X-Custom": {"custom value 123"},
 			},
-			Object: nil,
+			Body: nil,
 		},
 	})
 
@@ -849,7 +1008,7 @@ func TestOKResponseHeaderRegexp(t *testing.T) {
 			Headers: M{
 				"X-Custom": S{Regexp(`custom [a-z]+ [1-3]+`)},
 			},
-			Object: nil,
+			Body: nil,
 		},
 	})
 
@@ -877,7 +1036,7 @@ func TestOKResponseHeaderStoreVar(t *testing.T) {
 			Headers: M{
 				"X-Custom": S{StoreVar("header")},
 			},
-			Object: nil,
+			Body: nil,
 		},
 	})
 
@@ -905,8 +1064,9 @@ func TestOKResponseRawStringBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:    http.StatusOK,
-			RawBody: "Hello this is plain text",
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            "Hello this is plain text",
 		},
 	})
 
@@ -930,8 +1090,9 @@ func TestOKResponseRawStoreVarShortcutBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:    http.StatusOK,
-			RawBody: "$body$",
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            "$body$",
 		},
 	})
 
@@ -959,8 +1120,9 @@ func TestOKResponseRawRegexpBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:    http.StatusOK,
-			RawBody: Regexp(`^H[a-z ]+ [0-9]+$`),
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            Regexp(`^H[a-z ]+ [0-9]+$`),
 		},
 	})
 
@@ -984,11 +1146,12 @@ func TestOKResponseRawRegexpVarsBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			RawBody: RegexpVars{
-				Regexp: `^H[a-z ]+ ([0-9]+)$`,
-				Vars:   map[int]string{1: "counter"},
-			},
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body: RegexpVars(
+				`^H[a-z ]+ ([0-9]+)$`,
+				map[int]string{1: "counter"},
+			),
 		},
 	})
 
@@ -1019,8 +1182,8 @@ func TestOKTestAssert(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: "ok",
+			Code: http.StatusOK,
+			Body: "ok",
 		},
 	})
 }
@@ -1040,8 +1203,8 @@ func TestOKIgnoreResponseCode(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: AnyCode,
-			Object: M{
+			Code: Any(),
+			Body: M{
 				"stats": "ok",
 			},
 		},
@@ -1068,8 +1231,8 @@ func TestOKIgnoreMapValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
-				"stats": Any,
+			Body: M{
+				"stats": Any(),
 			},
 		},
 	})
@@ -1079,7 +1242,7 @@ func TestOKIgnoreMapValue(t *testing.T) {
 	}
 }
 
-func TestOKIgnoreResponseObject(t *testing.T) {
+func TestOKIgnoreResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -1094,8 +1257,8 @@ func TestOKIgnoreResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Any,
+			Code: http.StatusOK,
+			Body: Any(),
 		},
 	})
 
@@ -1120,7 +1283,7 @@ func TestOKStoreVarStringValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": StoreVar("myvar"),
 			},
 		},
@@ -1151,7 +1314,7 @@ func TestOKStoreVarNumberValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": StoreVar("myvar"),
 			},
 		},
@@ -1187,7 +1350,7 @@ func TestOKLoadVarStringValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": LoadVar("myvar"),
 			},
 		},
@@ -1219,7 +1382,7 @@ func TestOKLoadVarNumberValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": LoadVar("myvar"),
 			},
 		},
@@ -1260,7 +1423,7 @@ func TestOKRegexp(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": Regexp(`^[0-9]{3} - .* - end$`),
 			},
 		},
@@ -1287,7 +1450,7 @@ func TestOKStoreVarShortcutStringValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": "$stats$",
 			},
 		},
@@ -1318,7 +1481,7 @@ func TestOKStoreVarShortcutNumberValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": "$stats$",
 			},
 		},
@@ -1354,7 +1517,7 @@ func TestOKStoreVarShortcutChangedBounds(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": "(stats)",
 			},
 		},
@@ -1395,7 +1558,7 @@ func TestOKLoadVarShortcutString(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"status": "value is _status_ !",
 			},
 		},
@@ -1432,7 +1595,7 @@ func TestOKLoadVarShortcutInt(t *testing.T) {
 			},
 			Response: TestResponse{
 				Code: http.StatusOK,
-				Object: M{
+				Body: M{
 					"status": "value is _id_",
 				},
 			},
@@ -1467,7 +1630,7 @@ func TestOKLoadVarShortcutFloat(t *testing.T) {
 			},
 			Response: TestResponse{
 				Code: http.StatusOK,
-				Object: M{
+				Body: M{
 					"status": "value is _id_",
 				},
 			},
@@ -1504,7 +1667,7 @@ func TestOKLoadVarShortcutFloatWithPrecision(t *testing.T) {
 			},
 			Response: TestResponse{
 				Code: http.StatusOK,
-				Object: M{
+				Body: M{
 					"status": "value is _id_",
 				},
 			},
@@ -1537,7 +1700,7 @@ func TestOKLoadVarShortcutBool(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"status": "value is _id_",
 			},
 		},
@@ -1574,7 +1737,7 @@ func TestOKLoadVarShortcutChangedBounds(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"status": "ok",
 			},
 		},
@@ -1601,10 +1764,7 @@ func TestOKNumberDeltaExactValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: NumberDelta{
-				Value: 555,
-				Delta: 0,
-			},
+			Body: NumberDelta(555, 0),
 		},
 	})
 
@@ -1629,10 +1789,7 @@ func TestOKNumberDeltaLowerValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: NumberDelta{
-				Value: 550,
-				Delta: 5,
-			},
+			Body: NumberDelta(550, 5),
 		},
 	})
 
@@ -1657,10 +1814,7 @@ func TestOKNumberDeltaGreaterValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: NumberDelta{
-				Value: 560,
-				Delta: 5,
-			},
+			Body: NumberDelta(560, 5),
 		},
 	})
 
@@ -1685,10 +1839,10 @@ func TestOKTimeDeltaExactValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 30, 123*int(time.Millisecond), time.UTC),
-				Delta: 0,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 30, 123*int(time.Millisecond), time.UTC),
+				0,
+			),
 		},
 	})
 
@@ -1713,10 +1867,10 @@ func TestOKTimeDeltaBeforeValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 30, 0, time.UTC),
-				Delta: 1 * time.Second,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 30, 0, time.UTC),
+				1*time.Second,
+			),
 		},
 	})
 
@@ -1741,10 +1895,10 @@ func TestOKTimeDeltaAfterValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 31, 0, time.UTC),
-				Delta: 1 * time.Second,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 31, 0, time.UTC),
+				1*time.Second,
+			),
 		},
 	})
 
@@ -1771,10 +1925,10 @@ func TestOKTimeDeltaDefaultFormat(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 30, 123*int(time.Millisecond), time.UTC),
-				Delta: 0,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 30, 123*int(time.Millisecond), time.UTC),
+				0,
+			),
 		},
 	})
 
@@ -1799,11 +1953,11 @@ func TestOKTimeDeltaFormat(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:   time.Date(2020, time.April, 11, 20, 10, 30, 123*int(time.Millisecond), time.UTC),
-				Delta:  0,
-				Format: "Day 2006-01-02 Hour 15:04:05Z07:00",
-			},
+			Body: TimeDeltaLayout(
+				time.Date(2020, time.April, 11, 20, 10, 30, 123*int(time.Millisecond), time.UTC),
+				0,
+				"Day 2006-01-02 Hour 15:04:05Z07:00",
+			),
 		},
 	})
 
@@ -1828,10 +1982,7 @@ func TestOKRegexpVars(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: RegexpVars{
-				Regexp: `.*: (\w+) and (\w+)\.`,
-				Vars:   map[int]string{1: "first", 2: "second"},
-			},
+			Body: RegexpVars(`.*: (\w+) and (\w+)\.`, map[int]string{1: "first", 2: "second"}),
 		},
 	})
 
@@ -1864,10 +2015,7 @@ func TestOKRegexpVarsOnlyFullMatch(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: RegexpVars{
-				Regexp: `--header--.+--footer--`,
-				Vars:   map[int]string{0: "full"},
-			},
+			Body: RegexpVars(`--header--.+--footer--`, map[int]string{0: "full"}),
 		},
 	})
 
@@ -1894,8 +2042,8 @@ func TestErrNilMarshaler(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -1916,8 +2064,8 @@ func TestErrNilUnmarshaler(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -1938,8 +2086,8 @@ func TestErrNilHTTPHandler(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -1968,8 +2116,8 @@ func TestErrNilErrorHandler(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: "KO",
+			Code: http.StatusOK,
+			Body: "KO",
 		},
 	})
 
@@ -1987,8 +2135,8 @@ func TestErrMissingHTTPMethod(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -2007,8 +2155,8 @@ func TestErrInvalidHTTPMethod(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -2027,8 +2175,8 @@ func TestErrMissingURLPath(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -2047,8 +2195,8 @@ func TestErrMarshalRequestBody(t *testing.T) {
 			Body:   M{"n": json.Number(`invalid`)}, // This is refused by json.Marshal
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -2071,8 +2219,8 @@ func TestErrResponseCode(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -2099,8 +2247,8 @@ func TestErrTestAssertCallFailFunction(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: "not ok",
+			Code: http.StatusOK,
+			Body: "not ok",
 		},
 	})
 
@@ -2138,62 +2286,62 @@ func TestErrResponseBodyType(t *testing.T) {
 	})
 
 	tests := []struct {
-		Path   string
-		Object interface{}
-		Error  string
+		Path  string
+		Body  interface{}
+		Error string
 	}{
 		// Int
-		{Path: "string", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Object: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Uint
-		{Path: "string", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Object: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// String
-		{Path: "int", Object: "ok", Error: "different kinds. Expected string, got float64"}, // TODO can we force json.Unmarshal to use int ?
-		{Path: "float", Object: "ok", Error: "different kinds. Expected string, got float64"},
-		{Path: "bool", Object: "ok", Error: "different kinds. Expected string, got bool"},
-		{Path: "map", Object: "ok", Error: "different kinds. Expected string, got map"},
-		{Path: "slice", Object: "ok", Error: "different kinds. Expected string, got slice"},
+		{Path: "int", Body: "ok", Error: "different kinds. Expected string, got float64"}, // TODO can we force json.Unmarshal to use int ?
+		{Path: "float", Body: "ok", Error: "different kinds. Expected string, got float64"},
+		{Path: "bool", Body: "ok", Error: "different kinds. Expected string, got bool"},
+		{Path: "map", Body: "ok", Error: "different kinds. Expected string, got map"},
+		{Path: "slice", Body: "ok", Error: "different kinds. Expected string, got slice"},
 		// Float32
-		{Path: "string", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Object: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Float64
-		{Path: "string", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Object: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Bool
-		{Path: "string", Object: true, Error: "different kinds. Expected bool, got string"},
-		{Path: "int", Object: true, Error: "different kinds. Expected bool, got float64"},
-		{Path: "float", Object: true, Error: "different kinds. Expected bool, got float64"},
-		{Path: "map", Object: true, Error: "different kinds. Expected bool, got map"},
-		{Path: "slice", Object: true, Error: "different kinds. Expected bool, got slice"},
+		{Path: "string", Body: true, Error: "different kinds. Expected bool, got string"},
+		{Path: "int", Body: true, Error: "different kinds. Expected bool, got float64"},
+		{Path: "float", Body: true, Error: "different kinds. Expected bool, got float64"},
+		{Path: "map", Body: true, Error: "different kinds. Expected bool, got map"},
+		{Path: "slice", Body: true, Error: "different kinds. Expected bool, got slice"},
 		// Map
-		{Path: "string", Object: M{}, Error: "different kinds. Expected map, got string"},
-		{Path: "int", Object: M{}, Error: "different kinds. Expected map, got float64"},
-		{Path: "float", Object: M{}, Error: "different kinds. Expected map, got float64"},
-		{Path: "bool", Object: M{}, Error: "different kinds. Expected map, got bool"},
-		{Path: "slice", Object: M{}, Error: "different kinds. Expected map, got slice"},
+		{Path: "string", Body: M{}, Error: "different kinds. Expected map, got string"},
+		{Path: "int", Body: M{}, Error: "different kinds. Expected map, got float64"},
+		{Path: "float", Body: M{}, Error: "different kinds. Expected map, got float64"},
+		{Path: "bool", Body: M{}, Error: "different kinds. Expected map, got bool"},
+		{Path: "slice", Body: M{}, Error: "different kinds. Expected map, got slice"},
 		// Slice
-		{Path: "string", Object: S{}, Error: "different kinds. Expected slice, got string"},
-		{Path: "int", Object: S{}, Error: "different kinds. Expected slice, got float64"},
-		{Path: "float", Object: S{}, Error: "different kinds. Expected slice, got float64"},
-		{Path: "bool", Object: S{}, Error: "different kinds. Expected slice, got bool"},
-		{Path: "map", Object: S{}, Error: "different kinds. Expected slice, got map"},
+		{Path: "string", Body: S{}, Error: "different kinds. Expected slice, got string"},
+		{Path: "int", Body: S{}, Error: "different kinds. Expected slice, got float64"},
+		{Path: "float", Body: S{}, Error: "different kinds. Expected slice, got float64"},
+		{Path: "bool", Body: S{}, Error: "different kinds. Expected slice, got bool"},
+		{Path: "map", Body: S{}, Error: "different kinds. Expected slice, got map"},
 		// Struct
-		{Path: "string", Object: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "int", Object: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "float", Object: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "bool", Object: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "slice", Object: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "string", Body: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "int", Body: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "float", Body: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "bool", Body: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "slice", Body: struct{}{}, Error: "unhandled type struct {}"},
 		// Unhandled
-		{Path: "string", Object: complex(1, 2), Error: "unhandled type complex128"},
+		{Path: "string", Body: complex(1, 2), Error: "unhandled type complex128"},
 	}
 
 	for _, test := range tests {
@@ -2204,8 +2352,8 @@ func TestErrResponseBodyType(t *testing.T) {
 				Body:   nil,
 			},
 			Response: TestResponse{
-				Code:   http.StatusOK,
-				Object: test.Object,
+				Code: http.StatusOK,
+				Body: test.Body,
 			},
 		})
 
@@ -2215,7 +2363,7 @@ func TestErrResponseBodyType(t *testing.T) {
 	}
 }
 
-func TestErrStringResponseObject(t *testing.T) {
+func TestErrStringResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2230,8 +2378,8 @@ func TestErrStringResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: "nok",
+			Code: http.StatusOK,
+			Body: "nok",
 		},
 	})
 
@@ -2240,7 +2388,7 @@ func TestErrStringResponseObject(t *testing.T) {
 	}
 }
 
-func TestErrBoolResponseObject(t *testing.T) {
+func TestErrBoolResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2255,8 +2403,8 @@ func TestErrBoolResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: false,
+			Code: http.StatusOK,
+			Body: false,
 		},
 	})
 
@@ -2265,7 +2413,7 @@ func TestErrBoolResponseObject(t *testing.T) {
 	}
 }
 
-func TestErrNotResponseObject(t *testing.T) {
+func TestErrNotResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2284,8 +2432,8 @@ func TestErrNotResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Not{10},
+			Code: http.StatusOK,
+			Body: Not(10),
 		},
 	})
 
@@ -2300,8 +2448,8 @@ func TestErrNotResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Not{"hello"},
+			Code: http.StatusOK,
+			Body: Not("hello"),
 		},
 	})
 
@@ -2310,7 +2458,91 @@ func TestErrNotResponseObject(t *testing.T) {
 	}
 }
 
-func TestErrIntResponseObject(t *testing.T) {
+func TestErrAndResponseBody(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"hello"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: And("hello", Regexp("^h...$")),
+		},
+	})
+
+	if e := ExpectError(err, `regexp '^h...$' does not match 'hello'`); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: And("other", "unknown"),
+		},
+	})
+
+	if e := ExpectError(err, `strings does not match. Expected 'other', got 'hello'`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrOrResponseBody(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"hello"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: Or("byebye", "world"),
+		},
+	})
+
+	if e := ExpectError(err, `strings does not match. Expected 'byebye', got 'hello'
+strings does not match. Expected 'world', got 'hello'`); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: Or("world", "ciao"),
+		},
+	})
+
+	if e := ExpectError(err, `strings does not match. Expected 'world', got 'hello'
+strings does not match. Expected 'ciao', got 'hello'`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrIntResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2325,8 +2557,8 @@ func TestErrIntResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: 150,
+			Code: http.StatusOK,
+			Body: 150,
 		},
 	})
 
@@ -2335,7 +2567,7 @@ func TestErrIntResponseObject(t *testing.T) {
 	}
 }
 
-func TestErrUintResponseObject(t *testing.T) {
+func TestErrUintResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2350,8 +2582,8 @@ func TestErrUintResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: uint(150),
+			Code: http.StatusOK,
+			Body: uint(150),
 		},
 	})
 
@@ -2360,7 +2592,7 @@ func TestErrUintResponseObject(t *testing.T) {
 	}
 }
 
-func TestErrFloatResponseObject(t *testing.T) {
+func TestErrFloatResponseBody(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -2375,8 +2607,8 @@ func TestErrFloatResponseObject(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: 100.5,
+			Code: http.StatusOK,
+			Body: 100.5,
 		},
 	})
 
@@ -2401,8 +2633,8 @@ func TestErrUnmarshalResponseBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: Any,
+			Code: http.StatusOK,
+			Body: Any(),
 		},
 	})
 
@@ -2430,7 +2662,7 @@ func TestErrResponseHeader(t *testing.T) {
 			Headers: H{
 				"X-Custom": {"custom value 123"},
 			},
-			Object: nil,
+			Body: nil,
 		},
 	})
 
@@ -2453,12 +2685,33 @@ func TestErrNilResponseBody(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: "anything",
+			Code: http.StatusOK,
+			Body: "anything",
 		},
 	})
 
 	if e := ExpectError(err, `expected anything but got nil`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrRequestRawBodyInvalidType(t *testing.T) {
+	c := setupTest(t)
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method:        "POST",
+			Path:          "/api/test",
+			BodyMarshaler: RawMarshaler,
+			Body:          1,
+		},
+		Response: TestResponse{
+			Code: http.StatusAccepted,
+			Body: nil,
+		},
+	})
+
+	if e := ExpectError(err, `failed to marshal the testcase request body. only string or []byte supported`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2478,8 +2731,8 @@ func TestErrResponseBodyExpectedNil(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: nil,
+			Code: http.StatusOK,
+			Body: nil,
 		},
 	})
 
@@ -2503,8 +2756,8 @@ func TestErrSliceDifferentSize(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: S{"A"},
+			Code: http.StatusOK,
+			Body: S{"A"},
 		},
 	})
 
@@ -2528,8 +2781,8 @@ func TestErrSliceElementDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: S{"A", "C"},
+			Code: http.StatusOK,
+			Body: S{"A", "C"},
 		},
 	})
 
@@ -2553,8 +2806,8 @@ func TestErrMapDifferentKeyType(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: map[int]string{1: "test"},
+			Code: http.StatusOK,
+			Body: map[int]string{1: "test"},
 		},
 	})
 
@@ -2578,8 +2831,8 @@ func TestErrMapDifferentSize(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: M{"key": "value", "foo": "bar"},
+			Code: http.StatusOK,
+			Body: M{"key": "value", "foo": "bar"},
 		},
 	})
 
@@ -2606,8 +2859,8 @@ func TestErrMapKeyNotFound(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: M{"foo": "bar"},
+			Code: http.StatusOK,
+			Body: M{"foo": "bar"},
 		},
 	})
 
@@ -2631,8 +2884,8 @@ func TestErrMapElementDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: M{"key": "bar"},
+			Code: http.StatusOK,
+			Body: M{"key": "bar"},
 		},
 	})
 
@@ -2657,10 +2910,7 @@ func TestErrNumberDeltaNotNumber(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: NumberDelta{
-				Value: 500,
-				Delta: 10,
-			},
+			Body: NumberDelta(500, 10),
 		},
 	})
 
@@ -2685,10 +2935,7 @@ func TestErrNumberDeltaLowerValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: NumberDelta{
-				Value: 450,
-				Delta: 49,
-			},
+			Body: NumberDelta(450, 49),
 		},
 	})
 
@@ -2713,10 +2960,7 @@ func TestErrNumberDeltaGreaterValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: NumberDelta{
-				Value: 550,
-				Delta: 49,
-			},
+			Body: NumberDelta(550, 49),
 		},
 	})
 
@@ -2741,10 +2985,10 @@ func TestErrTimeDeltaNotString(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 31, 0, time.UTC),
-				Delta: 1 * time.Second,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 31, 0, time.UTC),
+				1*time.Second,
+			),
 		},
 	})
 
@@ -2769,10 +3013,10 @@ func TestErrTimeDeltaNotTime(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 31, 0, time.UTC),
-				Delta: 1 * time.Second,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 31, 0, time.UTC),
+				1*time.Second,
+			),
 		},
 	})
 
@@ -2797,10 +3041,10 @@ func TestErrTimeDeltaBeforeValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 29, 0, time.UTC),
-				Delta: 1 * time.Second,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 29, 0, time.UTC),
+				1*time.Second,
+			),
 		},
 	})
 
@@ -2825,10 +3069,10 @@ func TestErrTimeDeltaAfterValue(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: TimeDelta{
-				Time:  time.Date(2020, time.April, 11, 20, 10, 32, 0, time.UTC),
-				Delta: 1 * time.Second,
-			},
+			Body: TimeDelta(
+				time.Date(2020, time.April, 11, 20, 10, 32, 0, time.UTC),
+				1*time.Second,
+			),
 		},
 	})
 
@@ -2862,7 +3106,7 @@ func TestErrStoreVarInvalidVarname(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": StoreVar("my var"),
 			},
 		},
@@ -2927,7 +3171,7 @@ func TestErrLoadVarShortcutUnknownVariable(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"status": "status is _unknownvar_",
 			},
 		},
@@ -2954,7 +3198,7 @@ func TestErrLoadVarShortcutUnknownVariableInPath(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"status": "status is ok",
 			},
 		},
@@ -2986,7 +3230,7 @@ func TestErrLoadVarShortcutInvalidVariableType(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"status": "status is _var_",
 			},
 		},
@@ -3012,8 +3256,8 @@ func TestErrUnsortedSliceDifferentSize(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: UnsortedS{"A"},
+			Code: http.StatusOK,
+			Body: UnsortedS{"A"},
 		},
 	})
 
@@ -3037,8 +3281,8 @@ func TestErrUnsortedSliceElementNotFound(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: UnsortedS{"B", "C", "E"},
+			Code: http.StatusOK,
+			Body: UnsortedS{"B", "C", "E"},
 		},
 	})
 
@@ -3063,8 +3307,8 @@ func TestErrPartialMapKeyNotFound(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: PartialM{"foo": "bar"},
+			Code: http.StatusOK,
+			Body: PartialM{"foo": "bar"},
 		},
 	})
 
@@ -3088,8 +3332,8 @@ func TestErrPartialMapElementDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:   http.StatusOK,
-			Object: PartialM{"key": "bar"},
+			Code: http.StatusOK,
+			Body: PartialM{"key": "bar"},
 		},
 	})
 
@@ -3114,7 +3358,7 @@ func TestErrRegexpFailParsing(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": Regexp(`^[0-9](3 - .* - end$`),
 			},
 		},
@@ -3141,7 +3385,7 @@ func TestErrRegexpNotString(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": Regexp(`^[a-z]{3}$`),
 			},
 		},
@@ -3168,7 +3412,7 @@ func TestErrRegexpReplaceUnknownVariable(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": Regexp(`^[a-z]+ _who_$`),
 			},
 		},
@@ -3195,7 +3439,7 @@ func TestErrRegexpDoesNotMatch(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
+			Body: M{
 				"stats": Regexp(`^[a-z]{3} - .* - end$`),
 			},
 		},
@@ -3222,10 +3466,7 @@ func TestErrRegexpVarsNotString(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: RegexpVars{
-				Regexp: `^([0-9]{3})$`,
-				Vars:   nil,
-			},
+			Body: RegexpVars(`^([0-9]{3})$`, nil),
 		},
 	})
 
@@ -3250,11 +3491,8 @@ func TestErrRegexpVarsFailParsing(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
-				"stats": RegexpVars{
-					Regexp: `^[0-9](3 - .* - end$`,
-					Vars:   nil,
-				},
+			Body: M{
+				"stats": RegexpVars(`^[0-9](3 - .* - end$`, nil),
 			},
 		},
 	})
@@ -3280,11 +3518,8 @@ func TestErrRegexpVarsDoesNotMatch(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
-				"stats": RegexpVars{
-					Regexp: `^[a-z]{3} - (.*) - end$`,
-					Vars:   map[int]string{1: "v1"},
-				},
+			Body: M{
+				"stats": RegexpVars(`^[a-z]{3} - (.*) - end$`, map[int]string{1: "v1"}),
 			},
 		},
 	})
@@ -3310,11 +3545,8 @@ func TestErrRegexpVarsDoesInvalidVarname(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
-				"stats": RegexpVars{
-					Regexp: `^[0-9]{3} - (.*) - end$`,
-					Vars:   map[int]string{1: "v 1"},
-				},
+			Body: M{
+				"stats": RegexpVars(`^[0-9]{3} - (.*) - end$`, map[int]string{1: "v 1"}),
 			},
 		},
 	})
@@ -3340,11 +3572,8 @@ func TestErrRegexpVarsOverflowIndexIgnored(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
-			Object: M{
-				"stats": RegexpVars{
-					Regexp: `^[0-9]{3} - (.*) - end$`,
-					Vars:   map[int]string{2: "v1"},
-				},
+			Body: M{
+				"stats": RegexpVars(`^[0-9]{3} - (.*) - end$`, map[int]string{2: "v1"}),
 			},
 		},
 	})
@@ -3369,8 +3598,9 @@ func TestErrRawUnhandled(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:    http.StatusOK,
-			RawBody: 1234,
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            1234,
 		},
 	})
 
@@ -3394,8 +3624,9 @@ func TestErrRawStringDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:    http.StatusOK,
-			RawBody: "Hello this is plain text",
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            "Hello this is plain text",
 		},
 	})
 
@@ -3419,8 +3650,9 @@ func TestErrRawRegexpFailParsing(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:    http.StatusOK,
-			RawBody: Regexp(`^H[a-z ]+ ([0-9]+$`),
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            Regexp(`^H[a-z ]+ ([0-9]+$`),
 		},
 	})
 
@@ -3444,8 +3676,9 @@ func TestErrRawRegexpDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code:    http.StatusOK,
-			RawBody: Regexp(`^H[a-z ]+ [0-9]$`),
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            Regexp(`^H[a-z ]+ [0-9]$`),
 		},
 	})
 
@@ -3469,11 +3702,9 @@ func TestErrRawRegexpVarsFailParsing(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			RawBody: RegexpVars{
-				Regexp: `^H[a-z ]+ ([0-9]+$`,
-				Vars:   map[int]string{1: "counter"},
-			},
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            RegexpVars(`^H[a-z ]+ ([0-9]+$`, map[int]string{1: "counter"}),
 		},
 	})
 
@@ -3497,11 +3728,9 @@ func TestErrRawRegexpVarsDoesNotMatch(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			RawBody: RegexpVars{
-				Regexp: `^H[a-z ]+ ([0-9])$`,
-				Vars:   map[int]string{1: "counter"},
-			},
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            RegexpVars(`^H[a-z ]+ ([0-9])$`, map[int]string{1: "counter"}),
 		},
 	})
 
@@ -3525,11 +3754,9 @@ func TestErrRawRegexpVarsInvalidVarname(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			RawBody: RegexpVars{
-				Regexp: `^H[a-z ]+ ([0-9]+)$`,
-				Vars:   map[int]string{1: "counter 1"},
-			},
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            RegexpVars(`^H[a-z ]+ ([0-9]+)$`, map[int]string{1: "counter 1"}),
 		},
 	})
 
@@ -3553,11 +3780,9 @@ func TestErrRawRegexpVarsOverflowIndex(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: http.StatusOK,
-			RawBody: RegexpVars{
-				Regexp: `^H[a-z ]+ ([0-9]+)$`,
-				Vars:   map[int]string{2: "counter"},
-			},
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            RegexpVars(`^H[a-z ]+ ([0-9]+)$`, map[int]string{2: "counter"}),
 		},
 	})
 
@@ -3586,7 +3811,7 @@ func TestErrMultipleErrors(t *testing.T) {
 			Headers: H{
 				"X-Custom": {"custom value 123"},
 			},
-			Object: M{},
+			Body: M{},
 		},
 	})
 

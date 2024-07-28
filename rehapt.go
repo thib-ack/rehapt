@@ -1,41 +1,41 @@
 // Package rehapt allows to build REST HTTP API test cases by describing the request to execute
-// and the expected response object. The library takes care of comparing the expected and actual response
+// and the expected response body. The library takes care of comparing the expected and actual response
 // and reports any errors.
 // It has been designed to work very well for JSON APIs
 //
 // Example:
 //
-//  func TestAPISimple(t *testing.T) {
-//    r := NewRehapt(t, yourHttpServerMux)
+//	func TestAPISimple(t *testing.T) {
+//	  r := NewRehapt(t, yourHttpServerMux)
 //
-//    // Each testcase consist of a description of the request to execute
-//    // and a description of the expected response
-//    // By default the response description is exhaustive.
-//    // If an actual response field is not listed here, an error will be triggered
-//    // of course if an expected field described here is not present in response, an error will be triggered too.
-//    r.TestAssert(TestCase{
-//        Request: TestRequest{
-//            Method: "GET",
-//            Path:   "/api/user/1",
-//        },
-//        Response: TestResponse{
-//            Code: http.StatusOK,
-//            Object: M{
-//                "id":   "1",
-//                "name": "John",
-//                "age":  51,
-//                "pets": S{ // S for slice, M for map. Easy right ?
-//                    M{
-//                        "id":   "2",
-//                        "name": "Pepper the cat",
-//                        "type": "cat",
-//                    },
-//                },
-//                "weddingdate": "2019-06-22T16:00:00.000Z",
-//            },
-//        },
-//    })
-//  }
+//	  // Each testcase consist of a description of the request to execute
+//	  // and a description of the expected response
+//	  // By default the response description is exhaustive.
+//	  // If an actual response field is not listed here, an error will be triggered
+//	  // of course if an expected field described here is not present in response, an error will be triggered too.
+//	  r.TestAssert(TestCase{
+//	      Request: TestRequest{
+//	          Method: "GET",
+//	          Path:   "/api/user/1",
+//	      },
+//	      Response: TestResponse{
+//	          Code: http.StatusOK,
+//	          Body: M{
+//	              "id":   "1",
+//	              "name": "John",
+//	              "age":  51,
+//	              "pets": S{ // S for slice, M for map. Easy right ?
+//	                  M{
+//	                      "id":   "2",
+//	                      "name": "Pepper the cat",
+//	                      "type": "cat",
+//	                  },
+//	              },
+//	              "weddingdate": "2019-06-22T16:00:00.000Z",
+//	          },
+//	      },
+//	  })
+//	}
 //
 // See https://github.com/thib-ack/rehapt/tree/master/examples for more examples
 package rehapt
@@ -65,7 +65,7 @@ import (
 type Rehapt struct {
 	httpHandler            http.Handler
 	marshaler              func(v interface{}) ([]byte, error)
-	unmarshaler            func(data []byte, v interface{}) error
+	unmarshaler            UnmarshalFn
 	errorHandler           ErrorHandler
 	defaultHeaders         http.Header
 	variables              map[string]interface{}
@@ -78,7 +78,7 @@ type Rehapt struct {
 }
 
 // NewRehapt build a new Rehapt instance from the given http.Handler.
-// `handler` must be your server global handler. For example it could be
+// `handler` must be your server global handler. For example, it could be
 // a simple http.NewServeMux() or an complex third-party library mux.
 // `errorHandler` can be the *testing.T parameter of your test,
 // if value is nil, the errors are printed on stdout
@@ -263,41 +263,37 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	var err error
 	// If a body has been defined, then marshal it
 	if testcase.Request.Body != nil {
-		bodyData, err := r.marshaler(testcase.Request.Body)
+		marshaler := r.marshaler
+		if testcase.Request.BodyMarshaler != nil {
+			marshaler = testcase.Request.BodyMarshaler
+		}
+
+		bodyData, err := marshaler(testcase.Request.Body)
 		if err != nil {
 			return fmt.Errorf("failed to marshal the testcase request body. %v", err)
 		}
 		body = bytes.NewBuffer(bodyData)
-
-	} else if testcase.Request.RawBody != nil {
-		// If a raw body has been defined use it as-is (no marshal operation)
-		// unless variable replacement is allowed
-		if testcase.Request.NoRawBodyVariableReplacement == true {
-			body = testcase.Request.RawBody
-		} else {
-			// This could be optimized
-			rawBody, err := ioutil.ReadAll(testcase.Request.RawBody)
-			if err != nil {
-				return fmt.Errorf("error while reading raw body. %v", err)
-			}
-			rawBodyStr, err := r.replaceVars(string(rawBody))
-			if err != nil {
-				return fmt.Errorf("error while replacing variables in raw body. %v", err)
-			}
-			body = bytes.NewBufferString(rawBodyStr)
-		}
 	}
 
-	// The path might contains a variable reference (like _xx_). we have to replace it.
-	if testcase.Request.NoPathVariableReplacement == false {
-		testcase.Request.Path, err = r.replaceVars(testcase.Request.Path)
+	// Path should be either a string or a ReplaceFn
+	requestPath := ""
+	if repl, ok := testcase.Request.Path.(ReplaceFn); ok == true {
+		requestPath, err = repl(r)
+		if err != nil {
+			return fmt.Errorf("failed to replace path. %v", err)
+		}
+	} else if p, ok := testcase.Request.Path.(string); ok == true {
+		// Default to auto-replace
+		requestPath, err = r.replaceVars(p)
 		if err != nil {
 			return fmt.Errorf("error while replacing variables in path. %v", err)
 		}
+	} else {
+		return fmt.Errorf("invalid path type %T, only string or rehapt.ReplaceFn supported", testcase.Request.Path)
 	}
 
 	// Now start to build the HTTP request
-	request, err := http.NewRequest(testcase.Request.Method, testcase.Request.Path, body)
+	request, err := http.NewRequest(testcase.Request.Method, requestPath, body)
 	if err != nil {
 		return fmt.Errorf("failed to build HTTP request. %v", err)
 	}
@@ -307,20 +303,8 @@ func (r *Rehapt) Test(testcase TestCase) error {
 
 	// Add the testcase defined headers. This overrides any default header previously set
 	for k, values := range testcase.Request.Headers {
-		if testcase.Request.NoHeadersVariableReplacement == false {
-			k, err = r.replaceVars(k)
-			if err != nil {
-				return fmt.Errorf("error while replacing variables in header name. %v", err)
-			}
-		}
 		request.Header.Del(k)
 		for _, value := range values {
-			if testcase.Request.NoHeadersVariableReplacement == false {
-				value, err = r.replaceVars(value)
-				if err != nil {
-					return fmt.Errorf("error while replacing variables in header value. %v", err)
-				}
-			}
 			request.Header.Add(k, value)
 		}
 	}
@@ -338,11 +322,8 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	var bodyError error
 
 	// First check HTTP response code
-	// Maybe we have to ignore this completely as requested by the user
-	if testcase.Response.Code != AnyCode {
-		if testcase.Response.Code != response.StatusCode {
-			codeError = fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, response.StatusCode)
-		}
+	if err := r.compare(testcase.Response.Code, response.StatusCode); err != nil {
+		codeError = fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, response.StatusCode)
 	}
 
 	// Check headers if requested
@@ -352,24 +333,22 @@ func (r *Rehapt) Test(testcase TestCase) error {
 		}
 	}
 
-	// Want a raw comparison ?
-	// This is useful if response cannot be unmarshal. (for example simple plain/text output)
-	if testcase.Response.RawBody != nil {
-		if err := r.compare(testcase.Response.RawBody, recorder.Body.String()); err != nil {
-			bodyError = err
-		}
-
-	} else {
-		// Use Object expected body
-		bodyError = func() error {
+	bodyError = func() error {
+		var responseBody interface{}
+		if response.Body != nil {
 			data, err := ioutil.ReadAll(response.Body)
+			defer response.Body.Close()
 			if err != nil {
 				return fmt.Errorf("cannot read response body. %v", err)
 			}
 
-			var responseBody interface{}
 			if len(data) > 0 {
-				if err := r.unmarshaler(data, &responseBody); err != nil {
+				unmarshaler := r.unmarshaler
+				if testcase.Response.BodyUnmarshaler != nil {
+					unmarshaler = testcase.Response.BodyUnmarshaler
+				}
+
+				if err := unmarshaler(data, &responseBody); err != nil {
 					// If body is nil, then continue with nil decoded body
 					// the compare function will handle if that's expected or not
 					// but we don't want to report an unmarshal error
@@ -378,18 +357,18 @@ func (r *Rehapt) Test(testcase TestCase) error {
 					}
 				}
 			}
+		}
 
-			// Compare the response body with our testcase response object
-			// We could have used reflect.DeepEqual but we want finer comparison,
-			// which allow ignoring some fields, storing variables, using variables, etc.
-			// This is the main purpose of this library
-			if err := r.compare(testcase.Response.Object, responseBody); err != nil {
-				return err
-			}
+		// Compare the response body with our testcase response body
+		// We could have used reflect.DeepEqual but we want finer comparison,
+		// which allow ignoring some fields, storing variables, using variables, etc.
+		// This is the main purpose of this library
+		if err := r.compare(testcase.Response.Body, responseBody); err != nil {
+			return err
+		}
 
-			return nil
-		}()
-	}
+		return nil
+	}()
 
 	// Build an error based on the 3 possible errors on code, headers and body
 	if codeError != nil || headersError != nil || bodyError != nil {
@@ -432,7 +411,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 			}
 
 			// functionName will have form package.FuncName
-			// "github.com/thib-ack/rehapt_test.TestErrStringResponseObject"
+			// "github.com/thib-ack/rehapt_test.TestErrStringResponseBody"
 			functionName := function.Name()
 
 			// That's the std testing library
@@ -459,6 +438,11 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 
 func (r *Rehapt) validVarname(name string) bool {
 	return r.variableNameRegexp.MatchString(name)
+}
+
+func (r *Rehapt) ReplaceVars(str string) string {
+	s, _ := r.replaceVars(str)
+	return s
 }
 
 func (r *Rehapt) replaceVars(str string) (string, error) {
@@ -559,26 +543,6 @@ func (r *Rehapt) initComparators() {
 	// first matching comparator is used.
 	r.comparators = []comparator{
 		{
-			ExpectedKind: reflect.Struct,
-			ExpectedType: reflect.TypeOf(Not{}),
-			Compare:      r.notCompare,
-		},
-		{
-			ExpectedKind: reflect.Struct,
-			ExpectedType: reflect.TypeOf(TimeDelta{}),
-			Compare:      r.timeDeltaCompare,
-		},
-		{
-			ExpectedKind: reflect.Struct,
-			ExpectedType: reflect.TypeOf(NumberDelta{}),
-			Compare:      r.numberDeltaCompare,
-		},
-		{
-			ExpectedKind: reflect.Struct,
-			ExpectedType: reflect.TypeOf(RegexpVars{}),
-			Compare:      r.regexpVarsCompare,
-		},
-		{
 			ExpectedKind: reflect.Slice,
 			ExpectedType: reflect.TypeOf(UnsortedS{}),
 			Compare:      r.unsortedSliceCompare,
@@ -597,26 +561,6 @@ func (r *Rehapt) initComparators() {
 			ExpectedKind: reflect.Map,
 			ExpectedType: nil,
 			Compare:      r.mapCompare,
-		},
-		{
-			ExpectedKind: reflect.String,
-			ExpectedType: reflect.TypeOf(Any),
-			Compare:      r.anyCompare,
-		},
-		{
-			ExpectedKind: reflect.String,
-			ExpectedType: reflect.TypeOf(StoreVar("")),
-			Compare:      r.storeVarCompare,
-		},
-		{
-			ExpectedKind: reflect.String,
-			ExpectedType: reflect.TypeOf(LoadVar("")),
-			Compare:      r.loadVarCompare,
-		},
-		{
-			ExpectedKind: reflect.String,
-			ExpectedType: reflect.TypeOf(Regexp("")),
-			Compare:      r.regexpCompare,
 		},
 		{
 			ExpectedKind: reflect.String,
@@ -716,6 +660,11 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 		ActualKind:    actualType.Kind(),
 		ActualType:    actualType,
 		ActualValue:   reflect.ValueOf(actual),
+	}
+
+	// If expected is a CompareFn function, then call it
+	if cmp, ok := expected.(CompareFn); ok == true { //expectedType.Kind() == reflect.Func && expectedType.String() == "rehapt.CompareFn" {
+		return cmp(r, ctx)
 	}
 
 	// Now find a matching comparator and let it do the job.

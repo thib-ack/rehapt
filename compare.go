@@ -3,106 +3,9 @@ package rehapt
 import (
 	"errors"
 	"fmt"
-	"math"
 	"reflect"
-	"regexp"
 	"strings"
-	"time"
 )
-
-func (r *Rehapt) timeDeltaCompare(ctx compareCtx) error {
-	timeDelta, ok := ctx.Expected.(TimeDelta)
-	if ok == false {
-		// This should never happened because we normally
-		// arrive here only when ExpectedType is TimeDelta
-		panic("Expected is not TimeDelta")
-	}
-
-	// TimeDelta can only compare with actual string values
-	if ctx.ActualKind != reflect.String {
-		return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualKind)
-	}
-
-	// Use specific time format or default one if not specified
-	format := r.defaultTimeDeltaFormat
-	if timeDelta.Format != "" {
-		format = timeDelta.Format
-	}
-
-	// Parse the actual value given the format
-	actualTime, err := time.Parse(format, ctx.ActualValue.String())
-	if err != nil {
-		return fmt.Errorf("invalid time. %v", err)
-	}
-
-	dt := timeDelta.Time.Sub(actualTime)
-	if dt < -timeDelta.Delta || dt > timeDelta.Delta {
-		return fmt.Errorf("max difference between %v and %v allowed is %v, but difference was %v", timeDelta.Time, actualTime, timeDelta.Delta, dt)
-	}
-	return nil
-}
-
-func (r *Rehapt) numberDeltaCompare(ctx compareCtx) error {
-	numDelta, ok := ctx.Expected.(NumberDelta)
-	if ok == false {
-		// This should never happened because we normally
-		// arrive here only when ExpectedType is NumberDelta
-		panic("Expected is not NumberDelta")
-	}
-
-	actualFloatValue := 0.0
-	switch ctx.ActualKind {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		actualFloatValue = float64(ctx.ActualValue.Int())
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		actualFloatValue = float64(ctx.ActualValue.Uint())
-	case reflect.Float32, reflect.Float64:
-		actualFloatValue = ctx.ActualValue.Float()
-	default:
-		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualKind)
-	}
-
-	delta := math.Abs(numDelta.Value - actualFloatValue)
-	if delta > numDelta.Delta {
-		return fmt.Errorf("max difference between %v and %v allowed is %v, but difference was %v", numDelta.Value, ctx.Actual, numDelta.Delta, delta)
-	}
-	return nil
-}
-
-func (r *Rehapt) regexpVarsCompare(ctx compareCtx) error {
-	reVars, ok := ctx.Expected.(RegexpVars)
-	if ok == false {
-		// This should never happened because we normally
-		// arrive here only when ExpectedType is RegexpVars
-		panic("Expected is not RegexpVars")
-	}
-
-	// RegexpVars can only compare with actual string values
-	if ctx.ActualKind != reflect.String {
-		return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualKind)
-	}
-
-	actualStr := ctx.ActualValue.String()
-
-	re, err := regexp.Compile(reVars.Regexp)
-	if err != nil {
-		return err
-	}
-	elements := re.FindStringSubmatch(actualStr)
-	if len(elements) == 0 {
-		return fmt.Errorf("regexp '%v' does not match '%v'", reVars.Regexp, actualStr)
-	}
-
-	for groupid, varname := range reVars.Vars {
-		if groupid >= len(elements) {
-			return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
-		}
-		if err := r.SetVariable(varname, elements[groupid]); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 func (r *Rehapt) unsortedSliceCompare(ctx compareCtx) error {
 	if ctx.ActualKind != reflect.Slice {
@@ -116,7 +19,7 @@ func (r *Rehapt) unsortedSliceCompare(ctx compareCtx) error {
 	}
 
 	// Unordered comparison
-	// We build a list of all the indexes (0,1,2,..,N-1)
+	// We build a list of all the indexes (0,1,2,...,N-1)
 	// So each time we find a matching element, we can remove its index from this list
 	// and ignore it on next search
 	actualIndexes := make([]int, actualLen)
@@ -257,54 +160,6 @@ func (r *Rehapt) mapCompare(ctx compareCtx) error {
 	return nil
 }
 
-func (r *Rehapt) anyCompare(ctx compareCtx) error {
-	// We have to ignore this completely as requested by the user
-	return nil
-}
-
-func (r *Rehapt) storeVarCompare(ctx compareCtx) error {
-	expectedStr := ctx.ExpectedValue.String()
-
-	// Don't compare but store the actual value using the expectedStr as variable name
-	if err := r.SetVariable(expectedStr, ctx.Actual); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *Rehapt) loadVarCompare(ctx compareCtx) error {
-	expectedStr := ctx.ExpectedValue.String()
-
-	// Compare actual value with the loaded value (which might be a string or not)
-	value := r.GetVariable(expectedStr)
-	return r.compare(value, ctx.Actual)
-}
-
-func (r *Rehapt) regexpCompare(ctx compareCtx) error {
-	if ctx.ActualKind != reflect.String {
-		return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualKind)
-	}
-
-	expectedStr := ctx.ExpectedValue.String()
-	actualStr := ctx.ActualValue.String()
-
-	// Make variable replacement
-	var err error
-	expectedStr, err = r.replaceVars(expectedStr)
-	if err != nil {
-		return err
-	}
-
-	re, err := regexp.Compile(expectedStr)
-	if err != nil {
-		return err
-	}
-	if re.MatchString(actualStr) == false {
-		return fmt.Errorf("regexp '%v' does not match '%v'", expectedStr, actualStr)
-	}
-	return nil
-}
-
 func (r *Rehapt) stringCompare(ctx compareCtx) error {
 	expectedStr := ctx.ExpectedValue.String()
 
@@ -346,22 +201,6 @@ func (r *Rehapt) boolCompare(ctx compareCtx) error {
 	// classic comparison
 	if expectedBool != actualBool {
 		return fmt.Errorf("bools does not match. Expected %v, got %v", expectedBool, actualBool)
-	}
-	return nil
-}
-
-func (r *Rehapt) notCompare(ctx compareCtx) error {
-	not, ok := ctx.Expected.(Not)
-	if ok == false {
-		// This should never happened because we normally
-		// arrive here only when ExpectedType is Not
-		panic("Expected is not Not")
-	}
-
-	// Normal comparison, but error means ok and no error means error
-	err := r.compare(not.Value, ctx.Actual)
-	if err == nil {
-		return fmt.Errorf("expected not %v, got %v", not.Value, ctx.Actual)
 	}
 	return nil
 }

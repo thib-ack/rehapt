@@ -1,9 +1,8 @@
 package rehapt
 
 import (
-	"io"
+	"fmt"
 	"reflect"
-	"time"
 )
 
 // ErrorHandler is the interface used to report errors when found by TestAssert().
@@ -21,22 +20,19 @@ type TestCase struct {
 
 // TestRequest describe the request to be executed
 type TestRequest struct {
-	Method                       string
-	Path                         string
-	Headers                      H
-	Body                         interface{}
-	RawBody                      io.Reader
-	NoPathVariableReplacement    bool
-	NoHeadersVariableReplacement bool
-	NoRawBodyVariableReplacement bool
+	Method        string
+	Path          interface{}
+	Headers       H
+	Body          interface{}
+	BodyMarshaler MarshalFn
 }
 
 // TestResponse describe the response expected
 type TestResponse struct {
-	Headers interface{}
-	Code    int
-	Object  interface{}
-	RawBody interface{}
+	Headers         interface{}
+	Code            interface{}
+	Body            interface{}
+	BodyUnmarshaler UnmarshalFn
 }
 
 // H declare a Headers map.
@@ -56,65 +52,39 @@ type PartialM map[string]interface{}
 type S []interface{}
 
 // UnsortedS declare an Unsorted Slice.
-// It allow to expect a list of element but without the constraint of order matching
+// It allows to expect a list of element but without the constraint of order matching
 type UnsortedS []interface{}
 
-// StoreVar allow to store the actual value in a variable instead of checking its content
-type StoreVar string
+type CompareFn func(r *Rehapt, ctx compareCtx) error
 
-// LoadVar allow to load the value of the variable and then compare with actual value
-type LoadVar string
+type ReplaceFn func(r *Rehapt) (string, error)
 
-// Regexp allow to do advanced regexp expectation.
-// If the regexp is invalid, an error is reported.
-// If the actual value to compare with is not a string, an error is reported.
-// If the actual value does not match the regexp, an error is reported
-type Regexp string
+type MarshalFn func(v interface{}) ([]byte, error)
 
-// RegexpVars is a mix between Regexp and StoreVar.
-// It check if the actual value matches the regexp.
-// but all the groups defined in the regexp can be extracted to variables for later reuse
-// The Vars hold the mapping groupid: varname.
-// For example with Regexp: `^Hello (.*) !$` and Vars: map[int]string{0: "all", 1: "name"}
-// then if the actual value is "Hello john !", it will match and 2 vars will be stored:
-//  "all" = "Hello john !"  (group 0 is the full match)
-//  "name" = "John"
-type RegexpVars struct {
-	Regexp string
-	Vars   map[int]string
+func RawMarshaler(v interface{}) ([]byte, error) {
+	if s, ok := v.(string); ok == true {
+		return []byte(s), nil
+	} else if b, ok := v.([]byte); ok == true {
+		return b, nil
+	} else {
+		return nil, fmt.Errorf("only string or []byte supported")
+	}
 }
 
-// Not means we don't expect the given value
-// it works as a boolean 'not' operator on the comparison
-type Not struct {
-	Value interface{}
+type UnmarshalFn func(data []byte, v interface{}) error
+
+func RawUnmarshaler(data []byte, out interface{}) error {
+	rv := reflect.ValueOf(out)
+	if rv.Kind() != reflect.Pointer || rv.IsNil() {
+		return fmt.Errorf("out should be a non-nil pointer")
+	}
+
+	if rv.IsValid() {
+		pv := rv.Elem()
+		pv.Set(reflect.ValueOf(string(data)))
+	}
+	return nil
 }
-
-// NumberDelta allow to expect number value with a given +/- delta.
-// Delta is compared to math.Abs(expected - actual) which explain why
-// if your expected value is 10 with a delta of 3, actual value will match from 7 to 13.
-type NumberDelta struct {
-	Value float64
-	Delta float64
-}
-
-// TimeDelta allow to expect time value with a given +/- delta.
-// Delta is compared to math.Abs(expected - actual) which explain why
-// if your expected time is time.Now() with a delta of 10sec,
-// actual value will match from now-10sec to now+10sec
-type TimeDelta struct {
-	Time   time.Time
-	Delta  time.Duration
-	Format string
-}
-
-type any string
-
-// Any allow you to ignore completely the field
-const Any = any("{Any}")
-
-// AnyCode allow you to ignore completely the response code
-const AnyCode = -1
 
 type compareCtx struct {
 	Expected      interface{}

@@ -63,7 +63,7 @@ func TestAPISimple(t *testing.T) {
         },
         Response: TestResponse{
             Code: http.StatusOK,
-            Object: M{
+            Body: M{
                 "id":   "1",
                 "name": "John",
                 "age":  51,
@@ -109,7 +109,7 @@ func TestAPIAdvanced(t *testing.T) {
             Code: http.StatusOK,
             // Check for headers presence in response
             Headers: PartialM{"X-Pet-Type": S{"Cat"}},
-            Object: M{
+            Body: M{
                 "id":   "1",
                 // We can ignore a specific field
                 "name": Any,
