@@ -49,7 +49,7 @@ jobs:
         run: go test -race -covermode atomic -coverprofile=covprofile
 
       - name: Install goveralls
-        run: go install github.com/mattn/goveralls@v0.0.11
+        run: go install github.com/mattn/goveralls
 
       - name: Send coverage
         env:
