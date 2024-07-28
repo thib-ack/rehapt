@@ -10,53 +10,58 @@ on:
     branches: [ "master" ]
 
 jobs:
-
-  build-with-modules:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version:
-          - "1.21"
-#          - "1.20"
-#          - "1.19"
-#          - "1.18"
-#          - "1.17"
-#          - "1.16"
-#          - "1.15"
-#          - "1.14"
-#          - "1.13"
-#          - "1.12"
-#          - "1.11"
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-
-      - name: Display Go version
-        run: go version
-
-      - name: Build
-        run: go build -v
-
-      - name: Test
-        run: go test -race -covermode atomic -coverprofile=covprofile
-
-      - name: Install goveralls
-        run: go install github.com/mattn/goveralls@latest
-
-      - name: Send coverage
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=covprofile -service=github
+#
+#  build-with-modules:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        go-version:
+#          - "1.21"
+##          - "1.20"
+##          - "1.19"
+##          - "1.18"
+##          - "1.17"
+##          - "1.16"
+##          - "1.15"
+##          - "1.14"
+##          - "1.13"
+##          - "1.12"
+##          - "1.11"
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Go ${{ matrix.go-version }}
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: ${{ matrix.go-version }}
+#
+#      - name: Display Go version
+#        run: go version
+#
+#      - name: Build
+#        run: go build -v
+#
+#      - name: Test
+#        run: go test -race -covermode atomic -coverprofile=covprofile
+#
+#      - name: Install goveralls
+#        run: go install github.com/mattn/goveralls@latest
+#
+#      - name: Send coverage
+#        env:
+#          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: goveralls -coverprofile=covprofile -service=github
 
 
   build-without-modules:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: /home/runner/work/rehapt/go
+    env:
+      GOPATH: /home/runner/work/rehapt/go
     strategy:
       matrix:
         go-version:
@@ -83,15 +88,11 @@ jobs:
           echo ${GOPATH}
           echo ${GOROOT}
 
-      - name: Build
-        run: go build -v
-        env:
-          GOPATH: /home/runner/work/rehapt/go
-
       - name: Test
         run: go test -v -race -covermode atomic -coverprofile=covprofile
-        env:
-          GOPATH: /home/runner/work/rehapt/go
+
+      - name: Build
+        run: go build -v
 
       - name: Install goveralls
         run: go install github.com/mattn/goveralls@latest
