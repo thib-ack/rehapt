@@ -112,7 +112,7 @@ func TestAPIAdvanced(t *testing.T) {
             Body: M{
                 "id":   "1",
                 // We can ignore a specific field
-                "name": Any,
+                "name": Any(),
                 // We can expect numbers with a given delta
                 "age":  NumberDelta(50, 10),
                 "pets": S{
