@@ -75,7 +75,7 @@ type UnmarshalFn func(data []byte, v interface{}) error
 
 func RawUnmarshaler(data []byte, out interface{}) error {
 	rv := reflect.ValueOf(out)
-	if rv.Kind() != reflect.Pointer || rv.IsNil() {
+	if rv.Kind() != reflect.Ptr || rv.IsNil() {
 		return fmt.Errorf("out should be a non-nil pointer")
 	}
 
