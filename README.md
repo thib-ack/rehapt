@@ -114,7 +114,7 @@ func TestAPIAdvanced(t *testing.T) {
                 // We can ignore a specific field
                 "name": Any,
                 // We can expect numbers with a given delta
-                "age":  NumberDelta{Value: 50, Delta: 10},
+                "age":  NumberDelta(50, 10),
                 "pets": S{
                     // We can expect a partial map. 
                     // the keys not listed here will be ignored instead of returned as missing
@@ -123,14 +123,14 @@ func TestAPIAdvanced(t *testing.T) {
                         // We can expect with regexp
                         "name": Regexp(`[A-Za-z]+ the cat`),
                         // We can unexpect a value
-                        "type": Not{"dog"},
+                        "type": Not("dog"),
                         // We can expect a slice without order constraint
                         // here, ["mouse", "ball"] and ["ball", "mouse"] are valid responses
                         "toys": UnsortedS{"mouse", "ball"},
                     },
                 },
                 // We can expect dates with a given delta
-                "weddingdate": TimeDelta{Time: time.Now(), Delta: 24 * time.Hour},
+                "weddingdate": TimeDelta(time.Now(), 24 * time.Hour),
             },
         },
     })
@@ -159,7 +159,7 @@ func TestAPIVariables(t *testing.T) {
         },
         Response: TestResponse{
             Code: http.StatusOK,
-            Object: M{
+            Body: M{
                 // StoreVar doesn't check the actual value but store it in a variable named "age" here
                 "age":  StoreVar("age"),
                 "pets": S{
@@ -182,7 +182,7 @@ func TestAPIVariables(t *testing.T) {
         },
         Response: TestResponse{
             Code: http.StatusOK,
-            Object: M{
+            Body: M{
                 // LoadVar load the variable value and check with actual response value.
                 // Here it will report an error if cat's age is not the same as John's age
                 // which were extracted from previous request
