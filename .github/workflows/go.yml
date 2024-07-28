@@ -90,6 +90,8 @@ jobs:
 
       - name: Build
         run: go build -v github.com/thib-ack/rehapt
+        env:
+          GOPATH: /home/runner/work/rehapt/go
 
       - name: Test
         run: go test -v -race -covermode atomic -coverprofile=covprofile
