@@ -88,11 +88,12 @@ jobs:
           echo ${GOPATH}
           echo ${GOROOT}
 
+      - name: Build
+        run: go build -v github.com/thib-ack/rehapt
+
       - name: Test
         run: go test -v -race -covermode atomic -coverprofile=covprofile
-
-      - name: Build
-        run: go build -v
+        working-directory: /home/runner/work/rehapt/go/github.com/thib-ack/rehapt
 
       - name: Install goveralls
         run: go install github.com/mattn/goveralls@latest
