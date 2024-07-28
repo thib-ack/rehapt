@@ -59,9 +59,10 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: /home/runner/work/rehapt/go
+        working-directory: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
     env:
-      GOPATH: /home/runner/work/rehapt/go
+      GOPATH: ${{ github.workspace }}
+      GOBIN: ${{ github.workspace }}/bin
     strategy:
       matrix:
         go-version:
@@ -72,7 +73,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          path: go/src/github.com/thib-ack/rehapt
+          path: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
 
       - name: Setup Go ${{ matrix.go-version }}
         uses: actions/setup-go@v5
@@ -90,12 +91,10 @@ jobs:
 
       - name: Build
         run: go build -v github.com/thib-ack/rehapt
-        env:
-          GOPATH: /home/runner/work/rehapt/go
 
       - name: Test
         run: go test -v -race -covermode atomic -coverprofile=covprofile
-        working-directory: /home/runner/work/rehapt/go/github.com/thib-ack/rehapt
+        #working-directory: ${{ env.GOPATH }}/src/github.com/thib-ack/rehapt
 
       - name: Install goveralls
         run: go install github.com/mattn/goveralls@latest
