@@ -26,9 +26,9 @@ jobs:
     - name: Display Go version
       run: go version
     - name: Build
-      run: go build -v ./...
+      run: go build -v
     - name: Test
-      run: go test -race -covermode atomic -coverprofile=covprofile ./...
+      run: go test -race -covermode atomic -coverprofile=covprofile
     - name: Install goveralls
       run: go install github.com/mattn/goveralls@latest
     - name: Send coverage
