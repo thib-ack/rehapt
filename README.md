@@ -1,5 +1,5 @@
 
-# rehapt [![Build Status](https://travis-ci.com/thib-ack/rehapt.svg?branch=master)](https://travis-ci.com/thib-ack/rehapt) <a href='https://coveralls.io/github/thib-ack/rehapt'><img src='https://coveralls.io/repos/github/thib-ack/rehapt/badge.svg' alt='Coverage Status' /></a> <a href="https://goreportcard.com/report/github.com/thib-ack/rehapt"><img src="https://goreportcard.com/badge/github.com/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
+# rehapt [![Go](https://github.com/thib-ack/rehapt/actions/workflows/go.yml/badge.svg)](https://github.com/thib-ack/rehapt/actions/workflows/go.yml) <a href='https://coveralls.io/github/thib-ack/rehapt'><img src='https://coveralls.io/repos/github/thib-ack/rehapt/badge.svg' alt='Coverage Status' /></a> <a href="https://goreportcard.com/report/github.com/thib-ack/rehapt"><img src="https://goreportcard.com/badge/github.com/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
 
 Rehapt is a Golang declarative REST HTTP API testing library.
 You describe how you expect your HTTP API to behave and the library take care of comparing the expected and actual response elements.
