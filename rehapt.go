@@ -127,7 +127,10 @@ func (r *Rehapt) SetErrorHandler(errorHandler ErrorHandler) {
 // These headers will be added to all requests, however each
 // TestCase can override their values
 func (r *Rehapt) SetDefaultHeaders(headers http.Header) {
-	r.defaultHeaders = headers
+	// nil defaultHeaders could lead to panic later
+	if headers != nil {
+		r.defaultHeaders = headers
+	}
 }
 
 // GetDefaultHeaders allow to get all default request headers.
@@ -250,7 +253,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 
 	// First check HTTP response code
 	if err := r.compare(testcase.Response.Code, response.StatusCode); err != nil {
-		codeError = fmt.Errorf("response code does not match. Expected %d, got %d", testcase.Response.Code, response.StatusCode)
+		codeError = fmt.Errorf("response code does not match. %v", err)
 	}
 
 	// Check headers if requested

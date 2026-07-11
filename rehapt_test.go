@@ -2521,7 +2521,31 @@ func TestErrResponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. Expected 200, got 401`); e != "" {
+	if e := ExpectError(err, `response code does not match. integers does not match. Expected 200, got 401`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrResponseCodeCompareFn(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: NumberDelta(200, 5), // weird but valid
+			Body: nil,
+		},
+	})
+
+	if e := ExpectError(err, `response code does not match. max difference between 200 and 401 allowed is 5, but difference was 201`); e != "" {
 		t.Error(e)
 	}
 }
@@ -4112,7 +4136,7 @@ func TestErrMultipleErrors(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. Expected 200, got 400
+	if e := ExpectError(err, `response code does not match. integers does not match. Expected 200, got 400
 response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'
 different map sizes. Expected length of 0, got 1. Expected map[] got map[key:value]`); e != "" {
 		t.Error(e)
