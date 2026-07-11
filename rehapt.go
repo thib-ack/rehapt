@@ -543,6 +543,11 @@ func (r *Rehapt) initComparators() {
 	// first matching comparator is used.
 	r.comparators = []comparator{
 		{
+			ExpectedKind: reflect.Struct,
+			ExpectedType: reflect.TypeOf(time.Time{}),
+			Compare:      r.timeCompare,
+		},
+		{
 			ExpectedKind: reflect.Slice,
 			ExpectedType: reflect.TypeOf(UnsortedS{}),
 			Compare:      r.unsortedSliceCompare,
@@ -636,16 +641,13 @@ func (r *Rehapt) initComparators() {
 }
 
 func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
-	// This is perfectly valid
+	// shortcut: nil == nil
 	if expected == nil && actual == nil {
 		return nil
 	}
-	// but this is not. We cannot go further in these 2 cases as there are nothing to compare
+	// shortcut too
 	if expected == nil {
 		return fmt.Errorf("expected is nil but got %v", actual)
-	}
-	if actual == nil {
-		return fmt.Errorf("expected %v but got nil", expected)
 	}
 
 	expectedType := reflect.TypeOf(expected)
@@ -657,13 +659,12 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 		ExpectedType:  expectedType,
 		ExpectedValue: reflect.ValueOf(expected),
 		Actual:        actual,
-		ActualKind:    actualType.Kind(),
 		ActualType:    actualType,
 		ActualValue:   reflect.ValueOf(actual),
 	}
 
 	// If expected is a CompareFn function, then call it
-	if cmp, ok := expected.(CompareFn); ok == true { //expectedType.Kind() == reflect.Func && expectedType.String() == "rehapt.CompareFn" {
+	if cmp, ok := expected.(CompareFn); ok == true {
 		return cmp(r, ctx)
 	}
 

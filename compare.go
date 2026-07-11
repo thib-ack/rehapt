@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func (r *Rehapt) unsortedSliceCompare(ctx compareCtx) error {
-	if ctx.ActualKind != reflect.Slice {
-		return fmt.Errorf("different kinds. Expected slice, got %v", ctx.ActualKind)
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected slice, got <nil>")
+	}
+	if ctx.ActualType.Kind() != reflect.Slice {
+		return fmt.Errorf("different kinds. Expected slice, got %v", ctx.ActualType.Kind())
 	}
 
 	expectedLen := ctx.ExpectedValue.Len()
 	actualLen := ctx.ActualValue.Len()
 	if expectedLen != actualLen {
-		return fmt.Errorf("different slice sizes. Expected %v, got %v. Expected %v got %v", expectedLen, actualLen, ctx.Expected, ctx.Actual)
+		return fmt.Errorf("different slice sizes. Expected length of %v, got %v. Expected %v got %v", expectedLen, actualLen, ctx.Expected, ctx.Actual)
 	}
 
 	// Unordered comparison
@@ -62,14 +66,17 @@ nextExpected:
 }
 
 func (r *Rehapt) sliceCompare(ctx compareCtx) error {
-	if ctx.ActualKind != reflect.Slice {
-		return fmt.Errorf("different kinds. Expected slice, got %v", ctx.ActualKind)
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected slice, got <nil>")
+	}
+	if ctx.ActualType.Kind() != reflect.Slice {
+		return fmt.Errorf("different kinds. Expected slice, got %v", ctx.ActualType.Kind())
 	}
 
 	expectedLen := ctx.ExpectedValue.Len()
 	actualLen := ctx.ActualValue.Len()
 	if expectedLen != actualLen {
-		return fmt.Errorf("different slice sizes. Expected %d, got %d. Expected %v got %v", expectedLen, actualLen, ctx.Expected, ctx.Actual)
+		return fmt.Errorf("different slice sizes. Expected length of %d, got %d. Expected %v got %v", expectedLen, actualLen, ctx.Expected, ctx.Actual)
 	}
 
 	var errs []string
@@ -90,8 +97,11 @@ func (r *Rehapt) sliceCompare(ctx compareCtx) error {
 }
 
 func (r *Rehapt) partialMapCompare(ctx compareCtx) error {
-	if ctx.ActualKind != reflect.Map {
-		return fmt.Errorf("different kinds. Expected map, got %v", ctx.ActualKind)
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected map, got <nil>")
+	}
+	if ctx.ActualType.Kind() != reflect.Map {
+		return fmt.Errorf("different kinds. Expected map, got %v", ctx.ActualType.Kind())
 	}
 
 	// Key types have to be the same
@@ -125,8 +135,11 @@ func (r *Rehapt) partialMapCompare(ctx compareCtx) error {
 }
 
 func (r *Rehapt) mapCompare(ctx compareCtx) error {
-	if ctx.ActualKind != reflect.Map {
-		return fmt.Errorf("different kinds. Expected map, got %v", ctx.ActualKind)
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected map, got <nil>")
+	}
+	if ctx.ActualType.Kind() != reflect.Map {
+		return fmt.Errorf("different kinds. Expected map, got %v", ctx.ActualType.Kind())
 	}
 
 	// Key types have to be the same
@@ -135,7 +148,7 @@ func (r *Rehapt) mapCompare(ctx compareCtx) error {
 	}
 
 	if ctx.ExpectedValue.Len() != ctx.ActualValue.Len() {
-		return fmt.Errorf("different map sizes. Expected %d, got %d. Expected %v got %v", ctx.ExpectedValue.Len(), ctx.ActualValue.Len(), ctx.Expected, ctx.Actual)
+		return fmt.Errorf("different map sizes. Expected length of %d, got %d. Expected %v got %v", ctx.ExpectedValue.Len(), ctx.ActualValue.Len(), ctx.Expected, ctx.Actual)
 	}
 
 	var errs []string
@@ -170,8 +183,11 @@ func (r *Rehapt) stringCompare(ctx compareCtx) error {
 		return nil
 	}
 
-	if ctx.ActualKind != reflect.String {
-		return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualKind)
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected string, got <nil>")
+	}
+	if ctx.ActualType.Kind() != reflect.String {
+		return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
 	}
 
 	actualStr := ctx.ActualValue.String()
@@ -191,8 +207,11 @@ func (r *Rehapt) stringCompare(ctx compareCtx) error {
 }
 
 func (r *Rehapt) boolCompare(ctx compareCtx) error {
-	if ctx.ActualKind != reflect.Bool {
-		return fmt.Errorf("different kinds. Expected bool, got %v", ctx.ActualKind)
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected bool, got <nil>")
+	}
+	if ctx.ActualType.Kind() != reflect.Bool {
+		return fmt.Errorf("different kinds. Expected bool, got %v", ctx.ActualType.Kind())
 	}
 
 	expectedBool := ctx.ExpectedValue.Bool()
@@ -208,7 +227,11 @@ func (r *Rehapt) boolCompare(ctx compareCtx) error {
 func (r *Rehapt) intCompare(ctx compareCtx) error {
 	expectedInt := ctx.ExpectedValue.Int()
 
-	switch ctx.ActualKind {
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
+	}
+
+	switch ctx.ActualType.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		actualInt := ctx.ActualValue.Int()
 		// classic comparison
@@ -228,7 +251,7 @@ func (r *Rehapt) intCompare(ctx compareCtx) error {
 			return fmt.Errorf("floats does not match. Expected %v, got %v", expectedInt, actualFloat)
 		}
 	default:
-		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualKind)
+		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
 	}
 
 	return nil
@@ -237,7 +260,11 @@ func (r *Rehapt) intCompare(ctx compareCtx) error {
 func (r *Rehapt) uintCompare(ctx compareCtx) error {
 	expectedInt := ctx.ExpectedValue.Uint()
 
-	switch ctx.ActualKind {
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
+	}
+
+	switch ctx.ActualType.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		actualInt := ctx.ActualValue.Int()
 		// classic comparison
@@ -257,7 +284,7 @@ func (r *Rehapt) uintCompare(ctx compareCtx) error {
 			return fmt.Errorf("floats does not match. Expected %v, got %v", expectedInt, actualFloat)
 		}
 	default:
-		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualKind)
+		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
 	}
 
 	return nil
@@ -266,7 +293,11 @@ func (r *Rehapt) uintCompare(ctx compareCtx) error {
 func (r *Rehapt) floatCompare(ctx compareCtx) error {
 	expectedFloat := ctx.ExpectedValue.Float()
 
-	switch ctx.ActualKind {
+	if ctx.Actual == nil {
+		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
+	}
+
+	switch ctx.ActualType.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		actualInt := ctx.ActualValue.Int()
 		// classic comparison
@@ -286,8 +317,14 @@ func (r *Rehapt) floatCompare(ctx compareCtx) error {
 			return fmt.Errorf("floats does not match. Expected %v, got %v", expectedFloat, actualFloat)
 		}
 	default:
-		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualKind)
+		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
 	}
 
 	return nil
+}
+
+func (r *Rehapt) timeCompare(ctx compareCtx) error {
+	expectedTime := ctx.ExpectedValue.Interface().(time.Time)
+	fn := TimeDelta(expectedTime, 0)
+	return fn(r, ctx)
 }

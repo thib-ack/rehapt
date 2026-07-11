@@ -92,9 +92,8 @@ type compareCtx struct {
 	ExpectedType  reflect.Type
 	ExpectedValue reflect.Value
 	Actual        interface{}
-	ActualKind    reflect.Kind
-	ActualType    reflect.Type
-	ActualValue   reflect.Value
+	ActualType  reflect.Type
+	ActualValue reflect.Value
 }
 
 type comparator struct {

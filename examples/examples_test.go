@@ -102,15 +102,17 @@ func TestExampleAdvanced(t *testing.T) {
 			Code: http.StatusOK,
 			Body: M{
 				"id":   StoreVar("id"),
-				"name": Or("John", "Tom"),
-				"age":  StoreVar("age"), // StoreVar works on any actual type (int here) not only strings
+				"name": Or("John", "Tom"), // We can use boolean-like operators
+				"age":  StoreVar("age"),   // StoreVar works on any actual type (int here) not only strings
 				"pets": S{
 					PartialM{ // A partial map ignores unlisted field instead of reporting errors
 						"id":   And(StoreVar("catid"), "123"), // We don't compare but register the cat ID returned here
 						"type": Any(),                         // We ignore this field
 					},
 				},
-				"weddingdate": TimeDelta(time.Date(2019, time.June, 22, 16, 0, 0, 0, time.UTC), 20*time.Second), // We can compare dates with delta
+				"weddingdate": TimeDelta(
+					time.Date(2019, time.June, 22, 16, 0, 0, 0, time.UTC),
+					20*time.Second), // We can compare dates with delta
 			},
 		},
 	})
@@ -160,7 +162,7 @@ func TestExampleAdvanced(t *testing.T) {
 func TestExampleInvalidAuth(t *testing.T) {
 	r := setupRehapt(t)
 
-	// This override the default Authorization header (set in setupRehapt)
+	// This override the default Authorization header (defined in setupRehapt())
 	r.TestAssert(TestCase{
 		Request: TestRequest{
 			Method:  "GET",

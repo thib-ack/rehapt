@@ -269,6 +269,10 @@ func TestOKNotResponseBody(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = fmt.Fprintf(w, `"hello"`)
 	})
+	c.server.HandleFunc("/api/test-empty", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, ``)
+	})
 
 	err := c.r.Test(TestCase{
 		Request: TestRequest{
@@ -342,7 +346,71 @@ func TestOKNotResponseBody(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
+			Body: Not(nil),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-str",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
 			Body: Not(10.0),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-empty",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: Any(),
+			Body: Not("hello"),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-empty",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: Any(),
+			Body: Not(false),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test-empty",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: Any(),
+			Body: Not(10),
 		},
 	})
 
@@ -541,6 +609,33 @@ func TestOKUnsortedSliceResponseBody(t *testing.T) {
 				"Doe",
 				99,
 				"John",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKTimeDateResponseBody(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `{"date": "2020-04-11T20:10:30.123Z"}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: M{
+				"date": time.Date(2020, time.April, 11, 20, 10, 30, 123*int(time.Millisecond), time.UTC),
 			},
 		},
 	})
@@ -1067,6 +1162,32 @@ func TestOKResponseRawStringBody(t *testing.T) {
 			Code:            http.StatusOK,
 			BodyUnmarshaler: RawUnmarshaler,
 			Body:            "Hello this is plain text",
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKResponseRawEmptyStringBody(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, ``)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:            http.StatusOK,
+			BodyUnmarshaler: RawUnmarshaler,
+			Body:            nil,
 		},
 	})
 
@@ -2691,7 +2812,7 @@ func TestErrNilResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected anything but got nil`); e != "" {
+	if e := ExpectError(err, `different kinds. Expected string, got <nil>`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2762,7 +2883,7 @@ func TestErrSliceDifferentSize(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different slice sizes. Expected 1, got 2. Expected [A] got [A B]`); e != "" {
+	if e := ExpectError(err, `different slice sizes. Expected length of 1, got 2. Expected [A] got [A B]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2838,8 +2959,8 @@ func TestErrMapDifferentSize(t *testing.T) {
 	})
 
 	// as printed order of map is unknown, we have to expect any of the two possibilities
-	e1 := ExpectError(err, `different map sizes. Expected 2, got 1. Expected map[foo:bar key:value] got map[key:value]`)
-	e2 := ExpectError(err, `different map sizes. Expected 2, got 1. Expected map[key:value foo:bar] got map[key:value]`)
+	e1 := ExpectError(err, `different map sizes. Expected length of 2, got 1. Expected map[foo:bar key:value] got map[key:value]`)
+	e2 := ExpectError(err, `different map sizes. Expected length of 2, got 1. Expected map[key:value foo:bar] got map[key:value]`)
 	if !(e1 == "" || e2 == "") {
 		t.Error(e1)
 	}
@@ -3262,7 +3383,7 @@ func TestErrUnsortedSliceDifferentSize(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different slice sizes. Expected 1, got 2. Expected [A] got [A B]`); e != "" {
+	if e := ExpectError(err, `different slice sizes. Expected length of 1, got 2. Expected [A] got [A B]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -3818,7 +3939,7 @@ func TestErrMultipleErrors(t *testing.T) {
 
 	if e := ExpectError(err, `response code does not match. Expected 200, got 400
 response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings does not match. Expected 'custom value 123', got 'not right value'
-different map sizes. Expected 0, got 1. Expected map[] got map[key:value]`); e != "" {
+different map sizes. Expected length of 0, got 1. Expected map[] got map[key:value]`); e != "" {
 		t.Error(e)
 	}
 }

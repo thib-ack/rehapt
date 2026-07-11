@@ -19,8 +19,11 @@ func NoReplacement(s string) ReplaceFn {
 func TimeDeltaLayout(t time.Time, delta time.Duration, layout string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// TimeDelta can only compare with actual string values
-		if ctx.ActualKind != reflect.String {
-			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualKind)
+		if ctx.Actual == nil {
+			return fmt.Errorf("different kinds. Expected string, got <nil>")
+		}
+		if ctx.ActualType.Kind() != reflect.String {
+			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
 		}
 
 		// Use specific time format or default one if not specified
@@ -56,8 +59,11 @@ func TimeDelta(t time.Time, delta time.Duration) CompareFn {
 // if your expected value is 10 with a delta of 3, actual value will match from 7 to 13.
 func NumberDelta(value float64, delta float64) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
+		if ctx.Actual == nil {
+			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
+		}
 		actualFloatValue := 0.0
-		switch ctx.ActualKind {
+		switch ctx.ActualType.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			actualFloatValue = float64(ctx.ActualValue.Int())
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
@@ -65,7 +71,7 @@ func NumberDelta(value float64, delta float64) CompareFn {
 		case reflect.Float32, reflect.Float64:
 			actualFloatValue = ctx.ActualValue.Float()
 		default:
-			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualKind)
+			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
 		}
 
 		dt := math.Abs(value - actualFloatValue)
@@ -83,8 +89,11 @@ func NumberDelta(value float64, delta float64) CompareFn {
 func Regexp(regex string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// Regexp can only compare with actual string values
-		if ctx.ActualKind != reflect.String {
-			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualKind)
+		if ctx.Actual == nil {
+			return fmt.Errorf("different kinds. Expected string, got <nil>")
+		}
+		if ctx.ActualType.Kind() != reflect.String {
+			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
 		}
 
 		actualStr := ctx.ActualValue.String()
@@ -112,15 +121,18 @@ func Regexp(regex string) CompareFn {
 // but all the groups defined in the regexp can be extracted to variables for later reuse
 // The Vars hold the mapping groupid: varname.
 // For example with Regexp: `^Hello (.*) !$` and Vars: map[int]string{0: "all", 1: "name"}
-// then if the actual value is "Hello john !", it will match and 2 vars will be stored:
+// then if the actual value is "Hello John !", it will match and 2 vars will be stored:
 //
 //	"all" = "Hello john !"  (group 0 is the full match)
 //	"name" = "John"
 func RegexpVars(regex string, vars map[int]string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// RegexpVars can only compare with actual string values
-		if ctx.ActualKind != reflect.String {
-			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualKind)
+		if ctx.Actual == nil {
+			return fmt.Errorf("different kinds. Expected string, got <nil>")
+		}
+		if ctx.ActualType.Kind() != reflect.String {
+			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
 		}
 
 		actualStr := ctx.ActualValue.String()
@@ -173,6 +185,9 @@ func Any() CompareFn {
 	}
 }
 
+// And allow you to cumulate multiple checks.
+// All the comparisons have to be valid to be considered as valid.
+// The comparisons are evaluated in order and stop on first failure
 func And(cmp ...interface{}) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		for _, comparer := range cmp {
@@ -185,6 +200,10 @@ func And(cmp ...interface{}) CompareFn {
 	}
 }
 
+// Or allow you to support optional checks.
+// Only one of the comparisons have to be valid to be considered as valid.
+// The comparisons are evaluated in order and does not stop on first success
+// this way you can use Or(StoreVar("myvar"), ...)
 func Or(cmp ...interface{}) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		errs := []string{}
