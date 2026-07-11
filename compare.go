@@ -236,10 +236,10 @@ func (r *Rehapt) intCompare(ctx compareCtx) error {
 			return fmt.Errorf("integers does not match. Expected %v, got %v", expectedInt, actualInt)
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		actualInt := ctx.ActualValue.Uint()
-		// classic comparison
-		if uint64(expectedInt) != actualInt {
-			return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedInt, actualInt)
+		actualUInt := ctx.ActualValue.Uint()
+		// becareful, do not cast negative expected to uint
+		if expectedInt < 0 || uint64(expectedInt) != actualUInt {
+			return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedInt, actualUInt)
 		}
 	case reflect.Float32, reflect.Float64:
 		actualFloat := ctx.ActualValue.Float()
@@ -255,7 +255,7 @@ func (r *Rehapt) intCompare(ctx compareCtx) error {
 }
 
 func (r *Rehapt) uintCompare(ctx compareCtx) error {
-	expectedInt := ctx.ExpectedValue.Uint()
+	expectedUInt := ctx.ExpectedValue.Uint()
 
 	if ctx.Actual == nil {
 		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
@@ -264,21 +264,21 @@ func (r *Rehapt) uintCompare(ctx compareCtx) error {
 	switch ctx.ActualType.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		actualInt := ctx.ActualValue.Int()
-		// classic comparison
-		if int64(expectedInt) != actualInt {
-			return fmt.Errorf("integers does not match. Expected %v, got %v", expectedInt, actualInt)
+		// becareful, do not cast negative actual to uint
+		if actualInt < 0 || expectedUInt != uint64(actualInt) {
+			return fmt.Errorf("integers does not match. Expected %v, got %v", expectedUInt, actualInt)
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		actualInt := ctx.ActualValue.Uint()
+		actualUInt := ctx.ActualValue.Uint()
 		// classic comparison
-		if expectedInt != actualInt {
-			return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedInt, actualInt)
+		if expectedUInt != actualUInt {
+			return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedUInt, actualUInt)
 		}
 	case reflect.Float32, reflect.Float64:
 		actualFloat := ctx.ActualValue.Float()
 		// classic comparison
-		if float64(expectedInt) != actualFloat {
-			return fmt.Errorf("floats does not match. Expected %v, got %v", expectedInt, actualFloat)
+		if float64(expectedUInt) != actualFloat {
+			return fmt.Errorf("floats does not match. Expected %v, got %v", expectedUInt, actualFloat)
 		}
 	default:
 		return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
@@ -298,13 +298,13 @@ func (r *Rehapt) floatCompare(ctx compareCtx) error {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		actualInt := ctx.ActualValue.Int()
 		// classic comparison
-		if int64(expectedFloat) != actualInt {
+		if expectedFloat != float64(actualInt) {
 			return fmt.Errorf("integers does not match. Expected %v, got %v", expectedFloat, actualInt)
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		actualInt := ctx.ActualValue.Uint()
 		// classic comparison
-		if uint64(expectedFloat) != actualInt {
+		if expectedFloat != float64(actualInt) {
 			return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedFloat, actualInt)
 		}
 	case reflect.Float32, reflect.Float64:

@@ -3038,6 +3038,81 @@ func TestErrFloatResponseBody(t *testing.T) {
 	}
 }
 
+func TestErrFloatReponseCode(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `100`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: 200.5,
+			Body: Any(),
+		},
+	})
+
+	if e := ExpectError(err, `response code does not match. integers does not match. Expected 200.5, got 200`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrIntReponseCode(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `100`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: -200,
+			Body: Any(),
+		},
+	})
+
+	if e := ExpectError(err, `response code does not match. integers does not match. Expected -200, got 200`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrUIntReponseCode(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `100`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: uint64(250),
+			Body: Any(),
+		},
+	})
+
+	if e := ExpectError(err, `response code does not match. integers does not match. Expected 250, got 200`); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestErrUnmarshalResponseBody(t *testing.T) {
 	c := setupTest(t)
 
