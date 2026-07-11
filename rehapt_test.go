@@ -1,6 +1,7 @@
 package rehapt_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -1157,6 +1158,42 @@ func TestOKResponseHeaderStoreVar(t *testing.T) {
 
 	if expected, actual := "custom value 123", c.r.GetVariable("header"); expected != actual {
 		t.Errorf("expected value %v but got %v", expected, actual)
+	}
+}
+
+func JsonUseNumberUnmarshaler(data []byte, out interface{}) error {
+	d := json.NewDecoder(bytes.NewReader(data))
+	d.UseNumber()
+	return d.Decode(out)
+}
+
+func TestOKResponseJsonUseNumberUnmarshaler(t *testing.T) {
+	// When using json UseNumber()
+	// The numbers are "decoded" as json.Number (string)
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `{"value": 100}`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code:            http.StatusOK,
+			BodyUnmarshaler: JsonUseNumberUnmarshaler,
+			Body: M{
+				"value": "100",
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
 	}
 }
 
