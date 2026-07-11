@@ -19,11 +19,9 @@ func NoReplacement(s string) ReplaceFn {
 func TimeDeltaLayout(t time.Time, delta time.Duration, layout string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// TimeDelta can only compare with actual string values
-		if ctx.Actual == nil {
-			return fmt.Errorf("different kinds. Expected string, got <nil>")
-		}
-		if ctx.ActualType.Kind() != reflect.String {
-			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
+		err := r.requireKind(ctx, reflect.String)
+		if err != nil {
+			return err
 		}
 
 		// Use specific time format or default one if not specified
@@ -91,17 +89,14 @@ func NumberDelta(value float64, delta float64) CompareFn {
 func Regexp(regex string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// Regexp can only compare with actual string values
-		if ctx.Actual == nil {
-			return fmt.Errorf("different kinds. Expected string, got <nil>")
-		}
-		if ctx.ActualType.Kind() != reflect.String {
-			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
+		err := r.requireKind(ctx, reflect.String)
+		if err != nil {
+			return err
 		}
 
 		actualStr := ctx.ActualValue.String()
 
 		// Make variable replacement
-		var err error
 		regex, err = r.replaceVars(regex)
 		if err != nil {
 			return err
@@ -133,17 +128,14 @@ func Regexp(regex string) CompareFn {
 func RegexpVars(regex string, vars map[int]string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// RegexpVars can only compare with actual string values
-		if ctx.Actual == nil {
-			return fmt.Errorf("different kinds. Expected string, got <nil>")
-		}
-		if ctx.ActualType.Kind() != reflect.String {
-			return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
+		err := r.requireKind(ctx, reflect.String)
+		if err != nil {
+			return err
 		}
 
 		actualStr := ctx.ActualValue.String()
 
 		// Make variable replacement
-		var err error
 		regex, err = r.replaceVars(regex)
 		if err != nil {
 			return err

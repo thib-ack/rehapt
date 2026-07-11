@@ -8,12 +8,20 @@ import (
 	"time"
 )
 
-func (r *Rehapt) unsortedSliceCompare(ctx compareCtx) error {
+func (r *Rehapt) requireKind(ctx compareCtx, expectedKind reflect.Kind) error {
 	if ctx.Actual == nil {
-		return fmt.Errorf("different kinds. Expected slice, got <nil>")
+		return fmt.Errorf("different kinds. Expected %s, got <nil>", expectedKind)
 	}
-	if ctx.ActualType.Kind() != reflect.Slice {
-		return fmt.Errorf("different kinds. Expected slice, got %v", ctx.ActualType.Kind())
+	if ctx.ActualType.Kind() != expectedKind {
+		return fmt.Errorf("different kinds. Expected %s, got %v", expectedKind, ctx.ActualType.Kind())
+	}
+	return nil
+}
+
+func (r *Rehapt) unsortedSliceCompare(ctx compareCtx) error {
+	err := r.requireKind(ctx, reflect.Slice)
+	if err != nil {
+		return err
 	}
 
 	expectedLen := ctx.ExpectedValue.Len()
@@ -66,11 +74,9 @@ nextExpected:
 }
 
 func (r *Rehapt) sliceCompare(ctx compareCtx) error {
-	if ctx.Actual == nil {
-		return fmt.Errorf("different kinds. Expected slice, got <nil>")
-	}
-	if ctx.ActualType.Kind() != reflect.Slice {
-		return fmt.Errorf("different kinds. Expected slice, got %v", ctx.ActualType.Kind())
+	err := r.requireKind(ctx, reflect.Slice)
+	if err != nil {
+		return err
 	}
 
 	expectedLen := ctx.ExpectedValue.Len()
@@ -97,11 +103,9 @@ func (r *Rehapt) sliceCompare(ctx compareCtx) error {
 }
 
 func (r *Rehapt) partialMapCompare(ctx compareCtx) error {
-	if ctx.Actual == nil {
-		return fmt.Errorf("different kinds. Expected map, got <nil>")
-	}
-	if ctx.ActualType.Kind() != reflect.Map {
-		return fmt.Errorf("different kinds. Expected map, got %v", ctx.ActualType.Kind())
+	err := r.requireKind(ctx, reflect.Map)
+	if err != nil {
+		return err
 	}
 
 	// Key types have to be the same
@@ -135,11 +139,9 @@ func (r *Rehapt) partialMapCompare(ctx compareCtx) error {
 }
 
 func (r *Rehapt) mapCompare(ctx compareCtx) error {
-	if ctx.Actual == nil {
-		return fmt.Errorf("different kinds. Expected map, got <nil>")
-	}
-	if ctx.ActualType.Kind() != reflect.Map {
-		return fmt.Errorf("different kinds. Expected map, got %v", ctx.ActualType.Kind())
+	err := r.requireKind(ctx, reflect.Map)
+	if err != nil {
+		return err
 	}
 
 	// Key types have to be the same
@@ -183,17 +185,14 @@ func (r *Rehapt) stringCompare(ctx compareCtx) error {
 		return nil
 	}
 
-	if ctx.Actual == nil {
-		return fmt.Errorf("different kinds. Expected string, got <nil>")
-	}
-	if ctx.ActualType.Kind() != reflect.String {
-		return fmt.Errorf("different kinds. Expected string, got %v", ctx.ActualType.Kind())
+	err := r.requireKind(ctx, reflect.String)
+	if err != nil {
+		return err
 	}
 
 	actualStr := ctx.ActualValue.String()
 
 	// Make variable replacement
-	var err error
 	expectedStr, err = r.replaceVars(expectedStr)
 	if err != nil {
 		return err
@@ -207,11 +206,9 @@ func (r *Rehapt) stringCompare(ctx compareCtx) error {
 }
 
 func (r *Rehapt) boolCompare(ctx compareCtx) error {
-	if ctx.Actual == nil {
-		return fmt.Errorf("different kinds. Expected bool, got <nil>")
-	}
-	if ctx.ActualType.Kind() != reflect.Bool {
-		return fmt.Errorf("different kinds. Expected bool, got %v", ctx.ActualType.Kind())
+	err := r.requireKind(ctx, reflect.Bool)
+	if err != nil {
+		return err
 	}
 
 	expectedBool := ctx.ExpectedValue.Bool()
