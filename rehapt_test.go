@@ -2085,6 +2085,106 @@ func TestOKNumberDeltaGreaterValue(t *testing.T) {
 	}
 }
 
+func TestOKNumberRange(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `555`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(500, 600),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKNumberRangeSingleElementRange(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `555`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(555, 555),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKNumberRangeLowerBound(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `555`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(555, 600),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestOKNumberRangeUpperBound(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `555`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(500, 555),
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestOKTimeDeltaExactValue(t *testing.T) {
 	c := setupTest(t)
 
@@ -2540,12 +2640,12 @@ func TestErrResponseCodeCompareFn(t *testing.T) {
 			Body:   nil,
 		},
 		Response: TestResponse{
-			Code: NumberDelta(200, 5), // weird but valid
+			Code: NumberRange(200, 299),
 			Body: nil,
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. max difference between 200 and 401 allowed is 5, but difference was 201`); e != "" {
+	if e := ExpectError(err, `response code does not match. value 401 is not within the range [200,299]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -3286,6 +3386,106 @@ func TestErrNumberDeltaGreaterValue(t *testing.T) {
 	})
 
 	if e := ExpectError(err, `max difference between 550 and 500 allowed is 49, but difference was 50`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrNumberRangeNotNumber(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `"hi"`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(10, 20),
+		},
+	})
+
+	if e := ExpectError(err, `different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrNumberRangeLowerValue(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `500`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(600, 700),
+		},
+	})
+
+	if e := ExpectError(err, `value 500 is not within the range [600,700]`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrNumberRangeGreaterValue(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `500`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(300, 400),
+		},
+	})
+
+	if e := ExpectError(err, `value 500 is not within the range [300,400]`); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestErrNumberRangeInvalidRange(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `500`)
+	})
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: NumberRange(600, 400),
+		},
+	})
+
+	if e := ExpectError(err, `range [600,400] is invalid`); e != "" {
 		t.Error(e)
 	}
 }

@@ -80,6 +80,35 @@ func NumberDelta(value float64, delta float64) CompareFn {
 	}
 }
 
+// NumberRange allow to compare a number value within a given [min-max] inclusive range
+func NumberRange(min float64, max float64) CompareFn {
+	return func(r *Rehapt, ctx compareCtx) error {
+		if min > max {
+			return fmt.Errorf("range [%v,%v] is invalid", min, max)
+		}
+
+		if ctx.Actual == nil {
+			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
+		}
+		actualFloatValue := 0.0
+		switch ctx.ActualType.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			actualFloatValue = float64(ctx.ActualValue.Int())
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			actualFloatValue = float64(ctx.ActualValue.Uint())
+		case reflect.Float32, reflect.Float64:
+			actualFloatValue = ctx.ActualValue.Float()
+		default:
+			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
+		}
+
+		if actualFloatValue < min || actualFloatValue > max {
+			return fmt.Errorf("value %v is not within the range [%v,%v]", ctx.Actual, min, max)
+		}
+		return nil
+	}
+}
+
 // Regexp allow to do advanced regexp expectation.
 // If the regexp is invalid, an error is reported.
 // If the actual value to compare with is not a string, an error is reported.
