@@ -86,6 +86,8 @@ func NumberDelta(value float64, delta float64) CompareFn {
 // If the regexp is invalid, an error is reported.
 // If the actual value to compare with is not a string, an error is reported.
 // If the actual value does not match the regexp, an error is reported
+// Note that Regexp uses unanchored semantics, which means you have to
+// use ^ and $ to make sure you compare the full string
 func Regexp(regex string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// Regexp can only compare with actual string values
@@ -125,6 +127,9 @@ func Regexp(regex string) CompareFn {
 //
 //	"all" = "Hello john !"  (group 0 is the full match)
 //	"name" = "John"
+//
+// Note that RegexpVars uses unanchored semantics, which means you have to
+// use ^ and $ to make sure you compare the full string
 func RegexpVars(regex string, vars map[int]string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// RegexpVars can only compare with actual string values
@@ -136,6 +141,13 @@ func RegexpVars(regex string, vars map[int]string) CompareFn {
 		}
 
 		actualStr := ctx.ActualValue.String()
+
+		// Make variable replacement
+		var err error
+		regex, err = r.replaceVars(regex)
+		if err != nil {
+			return err
+		}
 
 		re, err := regexp.Compile(regex)
 		if err != nil {
@@ -206,6 +218,10 @@ func And(cmp ...interface{}) CompareFn {
 // this way you can use Or(StoreVar("myvar"), ...)
 func Or(cmp ...interface{}) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
+		if len(cmp) == 0 {
+			return nil
+		}
+
 		errs := []string{}
 		for _, comparer := range cmp {
 			err := r.compare(comparer, ctx.Actual)

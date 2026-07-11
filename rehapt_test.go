@@ -480,6 +480,22 @@ func TestOKOrResponseBody(t *testing.T) {
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
+			Body: Or(), // empty or
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	err = c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
 			Body: Or("hello", "world"),
 		},
 	})
@@ -1555,6 +1571,35 @@ func TestOKRegexp(t *testing.T) {
 	}
 }
 
+func TestOKRegexpReplaceVariable(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `{"stats": "hello world"}`)
+	})
+
+	_ = c.r.SetVariable("who", "world")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: M{
+				"stats": Regexp(`^hello _who_$`),
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+}
+
 func TestOKStoreVarShortcutStringValue(t *testing.T) {
 	c := setupTest(t)
 
@@ -2118,6 +2163,40 @@ func TestOKRegexpVars(t *testing.T) {
 	if expected, actual := "World", c.r.GetVariable("second"); expected != actual {
 		t.Errorf("expected value %v but got %v, ", expected, actual)
 	}
+}
+
+func TestOKRegexpVarsReplaceVariable(t *testing.T) {
+	c := setupTest(t)
+
+	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprintf(w, `{"stats": "hello world"}`)
+	})
+
+	_ = c.r.SetVariable("who", "world")
+
+	err := c.r.Test(TestCase{
+		Request: TestRequest{
+			Method: "GET",
+			Path:   "/api/test",
+			Body:   nil,
+		},
+		Response: TestResponse{
+			Code: http.StatusOK,
+			Body: M{
+				"stats": RegexpVars(`^(\w+) _who_$`, map[int]string{1: "first"}),
+			},
+		},
+	})
+
+	if e := ExpectNil(err); e != "" {
+		t.Error(e)
+	}
+
+	if expected, actual := "hello", c.r.GetVariable("first"); expected != actual {
+		t.Errorf("expected value %v but got %v, ", expected, actual)
+	}
+
 }
 
 func TestOKRegexpVarsOnlyFullMatch(t *testing.T) {
