@@ -79,7 +79,7 @@ type Rehapt struct {
 
 // NewRehapt build a new Rehapt instance from the given http.Handler.
 // `handler` must be your server global handler. For example, it could be
-// a simple http.NewServeMux() or an complex third-party library mux.
+// a simple http.NewServeMux() or a complex third-party library mux.
 // `errorHandler` can be the *testing.T parameter of your test,
 // if value is nil, the errors are printed on stdout
 func NewRehapt(errorHandler ErrorHandler, handler http.Handler) *Rehapt {
@@ -429,9 +429,9 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 
 		if r.errorHandler != nil {
 			// Start with a \n because testing.T Errorf() prints data and do not start on new line
-			r.errorHandler.Errorf("\n" + message)
+			r.errorHandler.Errorf("\n%s", message)
 		} else {
-			fmt.Printf(message + "\n")
+			fmt.Printf("%s\n", message)
 		}
 	}
 }
@@ -508,7 +508,7 @@ func (r *Rehapt) replaceVars(str string) (string, error) {
 		case bool:
 			value = strconv.FormatBool(ival)
 		default:
-			return "", fmt.Errorf("variable %v of type %T cannot be using inside string", varname, ivalue)
+			return "", fmt.Errorf("variable %v of type %T cannot be used inside string", varname, ivalue)
 		}
 
 		replaced = append(replaced, str[offset:prefix]...)

@@ -2584,7 +2584,7 @@ func TestErrStringResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `strings does not match. Expected 'nok', got 'ok'`); e != "" {
+	if e := ExpectError(err, `strings do not match. Expected 'nok', got 'ok'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2695,7 +2695,7 @@ func TestErrAndResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `strings does not match. Expected 'other', got 'hello'`); e != "" {
+	if e := ExpectError(err, `strings do not match. Expected 'other', got 'hello'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2720,8 +2720,8 @@ func TestErrOrResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `strings does not match. Expected 'byebye', got 'hello'
-strings does not match. Expected 'world', got 'hello'`); e != "" {
+	if e := ExpectError(err, `strings do not match. Expected 'byebye', got 'hello'
+strings do not match. Expected 'world', got 'hello'`); e != "" {
 		t.Error(e)
 	}
 
@@ -2737,8 +2737,8 @@ strings does not match. Expected 'world', got 'hello'`); e != "" {
 		},
 	})
 
-	if e := ExpectError(err, `strings does not match. Expected 'world', got 'hello'
-strings does not match. Expected 'ciao', got 'hello'`); e != "" {
+	if e := ExpectError(err, `strings do not match. Expected 'world', got 'hello'
+strings do not match. Expected 'ciao', got 'hello'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2867,7 +2867,7 @@ func TestErrResponseHeader(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings does not match. Expected 'custom value 123', got 'not right value'`); e != "" {
+	if e := ExpectError(err, `response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -2987,7 +2987,7 @@ func TestErrSliceElementDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `slice element 1 does not match. strings does not match. Expected 'C', got 'B'`); e != "" {
+	if e := ExpectError(err, `slice element 1 does not match. strings do not match. Expected 'C', got 'B'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -3090,7 +3090,7 @@ func TestErrMapElementDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [key] does not match. strings does not match. Expected 'bar', got 'value'`); e != "" {
+	if e := ExpectError(err, `map element [key] does not match. strings do not match. Expected 'bar', got 'value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -3437,7 +3437,7 @@ func TestErrLoadVarShortcutInvalidVariableType(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [status] does not match. variable var of type rehapt.M cannot be using inside string`); e != "" {
+	if e := ExpectError(err, `map element [status] does not match. variable var of type rehapt.M cannot be used inside string`); e != "" {
 		t.Error(e)
 	}
 }
@@ -3538,7 +3538,7 @@ func TestErrPartialMapElementDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [key] does not match. strings does not match. Expected 'bar', got 'value'`); e != "" {
+	if e := ExpectError(err, `map element [key] does not match. strings do not match. Expected 'bar', got 'value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -3831,7 +3831,7 @@ func TestErrRawStringDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "strings does not match. Expected 'Hello this is plain text', got 'Hello this is plain text 1234'"); e != "" {
+	if e := ExpectError(err, "strings do not match. Expected 'Hello this is plain text', got 'Hello this is plain text 1234'"); e != "" {
 		t.Error(e)
 	}
 }
@@ -4017,7 +4017,7 @@ func TestErrMultipleErrors(t *testing.T) {
 	})
 
 	if e := ExpectError(err, `response code does not match. Expected 200, got 400
-response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings does not match. Expected 'custom value 123', got 'not right value'
+response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'
 different map sizes. Expected length of 0, got 1. Expected map[] got map[key:value]`); e != "" {
 		t.Error(e)
 	}

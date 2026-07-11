@@ -201,7 +201,7 @@ func (r *Rehapt) stringCompare(ctx compareCtx) error {
 
 	// classic comparison
 	if expectedStr != actualStr {
-		return fmt.Errorf("strings does not match. Expected '%v', got '%v'", expectedStr, actualStr)
+		return fmt.Errorf("strings do not match. Expected '%v', got '%v'", expectedStr, actualStr)
 	}
 	return nil
 }
