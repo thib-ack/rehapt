@@ -1530,6 +1530,38 @@ func TestOKLoadVarNumberValue(t *testing.T) {
 	}
 }
 
+func TestOKGetVariable(t *testing.T) {
+	c := setupTest(t)
+
+	_ = c.r.SetVariable("myvar", "thevalue")
+
+	valueStr := c.r.GetVariableString("myvar")
+	if valueStr != "thevalue" {
+		t.Error("value should be thevalue")
+	}
+
+	value := c.r.GetVariable("myvar")
+	if value != "thevalue" {
+		t.Error("value should be thevalue")
+	}
+}
+
+func TestOKGetVariableNotString(t *testing.T) {
+	c := setupTest(t)
+
+	_ = c.r.SetVariable("myvar", true)
+
+	valueStr := c.r.GetVariableString("myvar")
+	if valueStr != "" {
+		t.Error("value should be empty")
+	}
+
+	value := c.r.GetVariable("myvar")
+	if value != true {
+		t.Error("value should be true")
+	}
+}
+
 func TestOKGetVariableUnknown(t *testing.T) {
 	c := setupTest(t)
 
@@ -1541,6 +1573,70 @@ func TestOKGetVariableUnknown(t *testing.T) {
 	value := c.r.GetVariable("myvar")
 	if value != nil {
 		t.Error("value should be nil")
+	}
+}
+
+func TestOKLookupVariable(t *testing.T) {
+	c := setupTest(t)
+
+	_ = c.r.SetVariable("myvar", "thevalue")
+
+	valueStr, ok := c.r.LookupVariableString("myvar")
+	if valueStr != "thevalue" {
+		t.Error("value should be thevalue")
+	}
+	if ok != true {
+		t.Error("ok should be true")
+	}
+
+	value, ok := c.r.LookupVariable("myvar")
+	if value != "thevalue" {
+		t.Error("value should be thevalue")
+	}
+	if ok != true {
+		t.Error("ok should be true")
+	}
+}
+
+func TestOKLookupVariableNotString(t *testing.T) {
+	c := setupTest(t)
+
+	_ = c.r.SetVariable("myvar", true)
+
+	valueStr, ok := c.r.LookupVariableString("myvar")
+	if valueStr != "" {
+		t.Error("value should be empty")
+	}
+	if ok != false {
+		t.Error("ok should be false") // value is not a string
+	}
+
+	value, ok := c.r.LookupVariable("myvar")
+	if value != true {
+		t.Error("value should be true")
+	}
+	if ok != true {
+		t.Error("ok should be true") // ok as returned as interface{}
+	}
+}
+
+func TestOKLookupVariableUnknown(t *testing.T) {
+	c := setupTest(t)
+
+	valueStr, ok := c.r.LookupVariableString("myvar")
+	if valueStr != "" {
+		t.Error("value should be empty")
+	}
+	if ok != false {
+		t.Error("ok should be false")
+	}
+
+	value, ok := c.r.LookupVariable("myvar")
+	if value != nil {
+		t.Error("value should be nil")
+	}
+	if ok != false {
+		t.Error("ok should be false")
 	}
 }
 
