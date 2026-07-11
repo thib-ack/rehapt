@@ -113,8 +113,8 @@ func TestAPIAdvanced(t *testing.T) {
                 "id":   "1",
                 // We can ignore a specific field
                 "name": Any(),
-                // We can expect numbers with a given delta
-                "age":  NumberDelta(50, 10),
+                // We can expect numbers with a given delta (50 +/-2)
+                "age":  NumberDelta(50, 2),
                 "pets": S{
                     // We can expect a partial map. 
                     // the keys not listed here will be ignored instead of returned as missing
