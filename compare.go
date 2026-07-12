@@ -58,11 +58,11 @@ nextExpected:
 			}
 		}
 
-		// If we arrive here, we have an expected not matching any actual
+		// If we arrive here, we have an expected element that doesn't match any actual element
 		errs = append(errs, fmt.Sprintf("expected element %v at index %v not found", expectedElement, i))
 	}
 
-	// If here we still have actual index, it means unmatched element
+	// If we still have actual indexes here, it means there are unmatched elements
 	if len(actualIndexes) > 0 {
 		errs = append(errs, fmt.Sprintf("actual elements at indexes %v not found", actualIndexes))
 	}
@@ -179,7 +179,7 @@ func (r *Rehapt) stringCompare(ctx compareCtx) error {
 	expectedStr := ctx.ExpectedValue.String()
 
 	// This might be a StoreVar shortcut
-	// even if actual value is not a string
+	// even if the actual value is not a string
 	if r.storeIfVariable(expectedStr, ctx.Actual) == true {
 		// This was a variable store operation. no comparison to do
 		return nil
@@ -237,7 +237,7 @@ func (r *Rehapt) intCompare(ctx compareCtx) error {
 		}
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		actualUInt := ctx.ActualValue.Uint()
-		// becareful, do not cast negative expected to uint
+		// be careful, do not cast a negative expected value to uint
 		if expectedInt < 0 || uint64(expectedInt) != actualUInt {
 			return fmt.Errorf("uintegers does not match. Expected %v, got %v", expectedInt, actualUInt)
 		}
@@ -264,7 +264,7 @@ func (r *Rehapt) uintCompare(ctx compareCtx) error {
 	switch ctx.ActualType.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		actualInt := ctx.ActualValue.Int()
-		// becareful, do not cast negative actual to uint
+		// be careful, do not cast a negative actual value to uint
 		if actualInt < 0 || expectedUInt != uint64(actualInt) {
 			return fmt.Errorf("integers does not match. Expected %v, got %v", expectedUInt, actualInt)
 		}

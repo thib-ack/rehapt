@@ -1,4 +1,4 @@
-// Package rehapt allows to build REST HTTP API test cases by describing the request to execute
+// Package rehapt allows building REST HTTP API test cases by describing the request to execute
 // and the expected response body. The library takes care of comparing the expected and actual response
 // and reports any errors.
 // It has been designed to work very well for JSON APIs
@@ -76,7 +76,7 @@ type Rehapt struct {
 	comparators            []comparator
 }
 
-// NewRehapt build a new Rehapt instance from the given http.Handler.
+// NewRehapt builds a new Rehapt instance from the given http.Handler.
 // `handler` must be your server global handler. For example, it could be
 // a simple http.NewServeMux() or a complex third-party library mux.
 // `errorHandler` can be the *testing.T parameter of your test,
@@ -100,30 +100,30 @@ func NewRehapt(errorHandler ErrorHandler, handler http.Handler) *Rehapt {
 	return r
 }
 
-// SetHttpHandler allow to change the http.Handler used to run requests
+// SetHttpHandler allows changing the http.Handler used to run requests
 func (r *Rehapt) SetHttpHandler(handler http.Handler) {
 	r.httpHandler = handler
 }
 
-// SetMarshaler allow to change the marshal function used to encode requests body.
+// SetMarshaler allows changing the marshal function used to encode the request body.
 // The default marshaler is json.Marshal
 func (r *Rehapt) SetMarshaler(marshaler func(v interface{}) ([]byte, error)) {
 	r.marshaler = marshaler
 }
 
-// SetUnmarshaler allow to change the unmarshal function used to decode requests response.
+// SetUnmarshaler allows changing the unmarshal function used to decode the response.
 // The default unmarshaler is json.Unmarshal
 func (r *Rehapt) SetUnmarshaler(unmarshaler func(data []byte, v interface{}) error) {
 	r.unmarshaler = unmarshaler
 }
 
-// SetErrorHandler allow to change the object handling errors which is called when TestAssert() encounter an error.
+// SetErrorHandler allows changing the object handling errors which is called when TestAssert() encounters an error.
 // Setting ErrorHandler to nil will simply print the errors on stdout
 func (r *Rehapt) SetErrorHandler(errorHandler ErrorHandler) {
 	r.errorHandler = errorHandler
 }
 
-// SetDefaultHeaders allow to set all default request headers.
+// SetDefaultHeaders allows setting all default request headers.
 // These headers will be added to all requests, however each
 // TestCase can override their values
 func (r *Rehapt) SetDefaultHeaders(headers http.Header) {
@@ -133,7 +133,7 @@ func (r *Rehapt) SetDefaultHeaders(headers http.Header) {
 	}
 }
 
-// GetDefaultHeaders allow to get all default request headers.
+// GetDefaultHeaders allows getting all default request headers.
 // These headers will be added to all requests, however each
 // TestCase can override their values
 func (r *Rehapt) GetDefaultHeaders() http.Header {
@@ -146,21 +146,21 @@ func (r *Rehapt) GetDefaultHeader(name string) string {
 	return r.defaultHeaders.Get(name)
 }
 
-// SetDefaultHeader allow to set a default request header.
+// SetDefaultHeader allows setting a default request header.
 // This header will be added to all requests, however each
 // TestCase can override its value
 func (r *Rehapt) SetDefaultHeader(name string, value string) {
 	r.defaultHeaders.Set(name, value)
 }
 
-// AddDefaultHeader allow to add a default request header.
+// AddDefaultHeader allows adding a default request header.
 // This header will be added to all requests, however each
 // TestCase can override its value
 func (r *Rehapt) AddDefaultHeader(name string, value string) {
 	r.defaultHeaders.Add(name, value)
 }
 
-// SetDefaultTimeDeltaFormat allow to change the default time format
+// SetDefaultTimeDeltaFormat allows changing the default time format
 // It is used by TimeDelta, to parse the actual string value as a time.Time
 // Default is set to time.RFC3339 which is ok for JSON.
 // This default format can be changed manually for each TimeDelta
@@ -169,8 +169,8 @@ func (r *Rehapt) SetDefaultTimeDeltaFormat(format string) {
 }
 
 // Test is the main function of the library
-// it executes a given TestCase, i.e. do the request and
-// check if the actual response is matching the expected response
+// it executes a given TestCase, i.e. does the request and
+// checks if the actual response matches the expected response
 func (r *Rehapt) Test(testcase TestCase) error {
 	// If we don't have the minimum, we cannot go further.
 	if r.httpHandler == nil {
@@ -330,7 +330,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 		for i := 1; i < 20; i++ {
 			pc, file, line, ok := runtime.Caller(i)
 			if !ok {
-				// End of call-stack
+				// End of call stack
 				break
 			}
 
@@ -347,7 +347,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 			// That's the std testing library
 			// which is calling the tests
 			if functionName == "testing.tRunner" {
-				// Normally we break here, when we reached the testing lib
+				// Normally we break here, when we reach the testing lib
 				break
 			}
 
@@ -358,7 +358,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 		message := fmt.Sprintf("%v\nError: %v", strings.Join(callingStack, "\n"), err)
 
 		if r.errorHandler != nil {
-			// Start with a \n because testing.T Errorf() prints data and do not start on new line
+			// Start with a \n because testing.T Errorf() prints data and does not start on a new line
 			r.errorHandler.Errorf("\n%s", message)
 		} else {
 			fmt.Printf("%s\n", message)
@@ -368,7 +368,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 
 func (r *Rehapt) initComparators() {
 	// Fill the list of supported comparators
-	// Note the list order do matter because
+	// Note the list order does matter because
 	// first matching comparator is used.
 	r.comparators = []comparator{
 		{

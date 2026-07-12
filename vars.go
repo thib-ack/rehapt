@@ -6,20 +6,20 @@ import (
 	"strconv"
 )
 
-// GetVariable allow to retrieve a variable value from its name.
-// nil is returned if variable is not found
+// GetVariable allows retrieving a variable value from its name.
+// Nil is returned if the variable is not found
 func (r *Rehapt) GetVariable(name string) interface{} {
 	return r.variables[name]
 }
 
-// LookupVariable allow to retrieve a variable value from its name.
+// LookupVariable allows retrieving a variable value from its name.
 func (r *Rehapt) LookupVariable(name string) (interface{}, bool) {
 	value, ok := r.variables[name]
 	return value, ok
 }
 
-// GetVariableString allow to retrieve a variable value as a string from its name
-// empty string is returned if variable is not found
+// GetVariableString allows retrieving a variable value as a string from its name.
+// An empty string is returned if the variable is not found
 func (r *Rehapt) GetVariableString(name string) string {
 	if value, ok := r.variables[name].(string); ok == true {
 		return value
@@ -27,7 +27,7 @@ func (r *Rehapt) GetVariableString(name string) string {
 	return ""
 }
 
-// LookupVariableString allow to retrieve a variable value as a string from its name
+// LookupVariableString allows retrieving a variable value as a string from its name
 func (r *Rehapt) LookupVariableString(name string) (string, bool) {
 	if value, ok := r.variables[name].(string); ok == true {
 		return value, true
@@ -35,7 +35,7 @@ func (r *Rehapt) LookupVariableString(name string) (string, bool) {
 	return "", false
 }
 
-// SetVariable allow to define manually a variable.
+// SetVariable allows manually defining a variable.
 // Variable names are strings, however values can be any type
 func (r *Rehapt) SetVariable(name string, value interface{}) error {
 	if r.validVarname(name) == false {
@@ -45,7 +45,7 @@ func (r *Rehapt) SetVariable(name string, value interface{}) error {
 	return nil
 }
 
-// SetStoreShortcutBounds modify the strings used as prefix and suffix to identify
+// SetStoreShortcutBounds modifies the strings used as prefix and suffix to identify
 // a shortcut version of the store variable operation. The default prefix and suffix is "$" which makes
 // the default shortcut form like "$myvar$".
 func (r *Rehapt) SetStoreShortcutBounds(prefix string, suffix string) error {
@@ -65,7 +65,7 @@ func (r *Rehapt) SetStoreShortcutBounds(prefix string, suffix string) error {
 	return nil
 }
 
-// SetLoadShortcutBounds modify the strings used as prefix and suffix to identify
+// SetLoadShortcutBounds modifies the strings used as prefix and suffix to identify
 // a shortcut version of the load variable operation. The default prefix and suffix is "_" which makes
 // the default shortcut form like "_myvar_".
 func (r *Rehapt) SetLoadShortcutBounds(prefix string, suffix string) error {
@@ -85,7 +85,7 @@ func (r *Rehapt) SetLoadShortcutBounds(prefix string, suffix string) error {
 	return nil
 }
 
-// SetLoadShortcutFloatPrecision change the precision of float formatting when
+// SetLoadShortcutFloatPrecision changes the precision of float formatting when
 // used with a load shortcut. For example "value is _myvar_" can be replaced by
 // "value is 10.50" or "value is 10.500000".
 func (r *Rehapt) SetLoadShortcutFloatPrecision(precision int) {

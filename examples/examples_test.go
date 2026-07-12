@@ -11,10 +11,10 @@ import (
 func TestExampleSimple(t *testing.T) {
 	r := setupRehapt(t)
 
-	// Each testcase consist of a description of the request to execute
+	// Each testcase consists of a description of the request to execute
 	// and a description of the expected response
-	// By default the response description is exhaustive. if an actual response field is not listed, an error will be triggered.
-	// of course if an expected field described here is not present in response, an error will be triggered too.
+	// By default the response description is exhaustive. If an actual response field is not listed, an error will be triggered.
+	// Of course, if an expected field described here is not present in the response, an error will be triggered too.
 	r.TestAssert(TestCase{
 		Request: TestRequest{
 			Method: "GET",
@@ -57,8 +57,8 @@ func TestExampleChained(t *testing.T) {
 				"age":  51,
 				"pets": S{ // S for slice, M for map. Easy right ?
 					M{
-						"id":   "$catid$",        // Note ! Here we don't compare but register the value returned here inside a variable named catid,
-						"name": "Pepper the cat", // this form is a shortcut. You could also use `StoreVar("catid")`
+						"id":   "$catid$",        // Note! Here we don't compare but register the value returned here inside a variable named catid.
+						"name": "Pepper the cat", // This form is a shortcut. You could also use `StoreVar("catid")`
 						"type": "cat",
 					},
 				},
@@ -70,7 +70,7 @@ func TestExampleChained(t *testing.T) {
 	r.TestAssert(TestCase{
 		Request: TestRequest{
 			Method: "GET",
-			Path:   "/api/cat/_catid_", // Note ! Here we use the previously registered catid variable. $xyz$ for register _xyz_ for use.
+			Path:   "/api/cat/_catid_", // Note! Here we use the previously registered catid variable. $xyz$ registers a variable, _xyz_ uses it.
 		},
 		Response: TestResponse{
 			Code: http.StatusOK,
@@ -92,7 +92,7 @@ func TestExampleChained(t *testing.T) {
 func TestExampleAdvanced(t *testing.T) {
 	r := setupRehapt(t)
 
-	// Now lets demonstrate more cool features
+	// Now let's demonstrate more cool features
 	r.TestAssert(TestCase{
 		Request: TestRequest{
 			Method: "GET",
@@ -105,7 +105,7 @@ func TestExampleAdvanced(t *testing.T) {
 				"name": Or("John", "Tom"), // We can use boolean-like operators
 				"age":  StoreVar("age"),   // StoreVar works on any actual type (int here) not only strings
 				"pets": S{
-					PartialM{ // A partial map ignores unlisted field instead of reporting errors
+					PartialM{ // A partial map ignores unlisted fields instead of reporting errors
 						"id":   And(StoreVar("catid"), "123"), // We don't compare but register the cat ID returned here
 						"type": Any(),                         // We ignore this field
 					},
@@ -139,7 +139,7 @@ func TestExampleAdvanced(t *testing.T) {
 			Code:    http.StatusOK,
 			Headers: M{"X-Pet-Type": S{"Cat"}}, // Check for header presence in response
 			Body: M{
-				"id":   "_catid_", // Here we load the previously registred var. If it does not match with returned value -> error (try to change in example server)
+				"id":   "_catid_", // Here we load the previously registered var. If it does not match the returned value -> error (try changing it in the example server)
 				"age":  Any(),
 				"name": RegexpVars(`(.*) the cat`, map[int]string{1: "catname"}), // We can store vars using regexp groups
 				"toys": S{
@@ -162,7 +162,7 @@ func TestExampleAdvanced(t *testing.T) {
 func TestExampleInvalidAuth(t *testing.T) {
 	r := setupRehapt(t)
 
-	// This override the default Authorization header (defined in setupRehapt())
+	// This overrides the default Authorization header (defined in setupRehapt())
 	r.TestAssert(TestCase{
 		Request: TestRequest{
 			Method:  "GET",

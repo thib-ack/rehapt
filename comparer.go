@@ -44,16 +44,16 @@ func TimeDeltaLayout(t time.Time, delta time.Duration, layout string) CompareFn 
 	}
 }
 
-// TimeDelta allow to compare a time value with a given +/- delta.
-// Delta is compared to math.Abs(expected - actual) which explain why
+// TimeDelta allows comparing a time value with a given +/- delta.
+// Delta is compared to math.Abs(expected - actual) which explains why
 // if your expected time is time.Now() with a delta of 10sec,
 // actual value will match from now-10sec to now+10sec
 func TimeDelta(t time.Time, delta time.Duration) CompareFn {
 	return TimeDeltaLayout(t, delta, "")
 }
 
-// NumberDelta allow to compare a number value with a given +/- delta.
-// Delta is compared to math.Abs(expected - actual) which explain why
+// NumberDelta allows comparing a number value with a given +/- delta.
+// Delta is compared to math.Abs(expected - actual) which explains why
 // if your expected value is 10 with a delta of 3, actual value will match from 7 to 13.
 func NumberDelta(value float64, delta float64) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
@@ -80,7 +80,7 @@ func NumberDelta(value float64, delta float64) CompareFn {
 	}
 }
 
-// NumberRange allow to compare a number value within a given [min-max] inclusive range
+// NumberRange allows comparing a number value within a given [min-max] inclusive range
 func NumberRange(min float64, max float64) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		if min > max {
@@ -109,7 +109,7 @@ func NumberRange(min float64, max float64) CompareFn {
 	}
 }
 
-// Regexp allow to do advanced regexp expectation.
+// Regexp allows doing advanced regexp expectations.
 // If the regexp is invalid, an error is reported.
 // If the actual value to compare with is not a string, an error is reported.
 // If the actual value does not match the regexp, an error is reported
@@ -143,8 +143,8 @@ func Regexp(regex string) CompareFn {
 }
 
 // RegexpVars is a mix between Regexp and StoreVar.
-// It checks if the actual value matches the regexp.
-// but all the groups defined in the regexp can be extracted to variables for later reuse
+// It checks if the actual value matches the regexp,
+// but all the groups defined in the regexp can be extracted to variables for later reuse.
 // The Vars hold the mapping groupid: varname.
 // For example with Regexp: `^Hello (.*) !$` and Vars: map[int]string{0: "all", 1: "name"}
 // then if the actual value is "Hello John !", it will match and 2 vars will be stored:
@@ -191,7 +191,7 @@ func RegexpVars(regex string, vars map[int]string) CompareFn {
 	}
 }
 
-// StoreVar allow to store the actual value in a variable instead of checking its content
+// StoreVar allows storing the actual value in a variable instead of checking its content
 func StoreVar(name string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// Don't compare but store the actual value using the expectedStr as variable name
@@ -202,7 +202,7 @@ func StoreVar(name string) CompareFn {
 	}
 }
 
-// LoadVar allow to load the value of the variable and then compare with actual value
+// LoadVar allows loading the value of the variable and then comparing it with the actual value
 func LoadVar(name string) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// Compare actual value with the loaded value (which might be a string or not)
@@ -211,16 +211,16 @@ func LoadVar(name string) CompareFn {
 	}
 }
 
-// Any allow you to ignore completely the value
+// Any allows you to completely ignore the value
 func Any() CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		return nil
 	}
 }
 
-// And allow you to cumulate multiple checks.
+// And allows you to cumulate multiple checks.
 // All the comparisons have to be valid to be considered as valid.
-// The comparisons are evaluated in order and stop on first failure
+// The comparisons are evaluated in order and stop on the first failure
 func And(cmp ...interface{}) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		for _, comparer := range cmp {
@@ -233,9 +233,9 @@ func And(cmp ...interface{}) CompareFn {
 	}
 }
 
-// Or allow you to support optional checks.
-// Only one of the comparisons have to be valid to be considered as valid.
-// The comparisons are evaluated in order and does not stop on first success
+// Or allows you to support optional checks.
+// Only one of the comparisons has to be valid to be considered as valid.
+// The comparisons are evaluated in order and do not stop on the first success
 // this way you can use Or(StoreVar("myvar"), ...)
 func Or(cmp ...interface{}) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
@@ -258,8 +258,8 @@ func Or(cmp ...interface{}) CompareFn {
 	}
 }
 
-// Not means we don't expect the given value
-// it works as a boolean 'not' operator on the comparison
+// Not means we don't expect the given value.
+// It works as a boolean 'not' operator on the comparison
 func Not(value interface{}) CompareFn {
 	return func(r *Rehapt, ctx compareCtx) error {
 		// Normal comparison, but error means ok and no error means error

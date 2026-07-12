@@ -11,14 +11,14 @@ type ErrorHandler interface {
 	Errorf(format string, args ...interface{})
 }
 
-// TestCase is the base type supported to describe a test.
+// TestCase is the base type used to describe a test.
 // It is the object taken as parameters in Test() and TestAssert()
 type TestCase struct {
 	Request  TestRequest
 	Response TestResponse
 }
 
-// TestRequest describe the request to be executed
+// TestRequest describes the request to be executed
 type TestRequest struct {
 	Method        string
 	Path          interface{}
@@ -27,7 +27,7 @@ type TestRequest struct {
 	BodyMarshaler MarshalFn
 }
 
-// TestResponse describe the response expected
+// TestResponse describes the expected response
 type TestResponse struct {
 	Headers         interface{}
 	Code            interface{}
@@ -35,24 +35,26 @@ type TestResponse struct {
 	BodyUnmarshaler UnmarshalFn
 }
 
-// H declare a Headers map.
+// H declares a Headers map.
 // It is used to quickly define Headers within your requests
 type H map[string][]string
 
-// M declare a Map.
+// M declares a Map.
 // It is used to quickly build a map within your expected response body
 type M map[string]interface{}
 
-// PartialM declare a Partial Map.
-// It is used to expect some fields but ignore the un-listed ones instead of reporting missing
+// PartialM declares a Partial Map.
+// It is used to expect some fields but ignore the unlisted ones instead of reporting them as missing
 type PartialM map[string]interface{}
 
-// S declare a Slice.
+// S declares a Slice.
 // It is used to quickly build a slice within your expected response body
 type S []interface{}
 
-// UnsortedS declare an Unsorted Slice.
-// It allows to expect a list of element but without the constraint of order matching
+// UnsortedS declares an Unsorted Slice.
+// It allows expecting a list of elements but without the constraint of order matching
+// Be careful when using advanced features like Any, PartialM, ...
+// `UnsortedS{Any(), "x"}` would fail against `["x", "y"]`
 type UnsortedS []interface{}
 
 type CompareFn func(r *Rehapt, ctx compareCtx) error

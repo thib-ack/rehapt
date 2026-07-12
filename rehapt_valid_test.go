@@ -28,7 +28,7 @@ func setupTest(t *testing.T) *testContext {
 	return c
 }
 
-// small helper to expect an error or report failure is no error or incorrect error
+// small helper to expect an error or report failure if there is no error or an incorrect error
 func ExpectError(err error, str string) string {
 	if err == nil {
 		return fmt.Sprintf("Expected '%v', got no error", str)

@@ -2,10 +2,10 @@
 # rehapt [![Go](https://github.com/thib-ack/rehapt/actions/workflows/go.yml/badge.svg)](https://github.com/thib-ack/rehapt/actions/workflows/go.yml) [![Coverage Status](https://coveralls.io/repos/github/thib-ack/rehapt/badge.svg?branch=master)](https://coveralls.io/github/thib-ack/rehapt?branch=master) <a href="https://goreportcard.com/report/github.com/thib-ack/rehapt"><img src="https://goreportcard.com/badge/github.com/thib-ack/rehapt"></a> <a href="https://godoc.org/github.com/thib-ack/rehapt"><img src="https://godoc.org/github.com/thib-ack/rehapt?status.svg" alt="GoDoc reference"></a>
 
 Rehapt is a Golang declarative REST HTTP API testing library.
-You describe how you expect your HTTP API to behave and the library take care of comparing the expected and actual response elements.
+You describe how you expect your HTTP API to behave and the library takes care of comparing the expected and actual response elements.
 
-This library has been designed to work very well for JSON APIs but it can 
-handle any other format as long as it marshal/unmarshal to/from simple maps and slices
+This library has been designed to work very well for JSON APIs but it can
+handle any other format as long as it marshals/unmarshals to/from simple maps and slices.
 
 ## Features
 
@@ -21,6 +21,8 @@ handle any other format as long as it marshal/unmarshal to/from simple maps and 
     - Regexp string expectation
     - Expect times with delta
     - Expect numbers with delta
+    - Expect numbers within a range
+    - Boolean operations
     - Store fields in variables
     - Load variables previously stored
     - Unsorted slice expectation if order doesn't matter
@@ -116,8 +118,8 @@ func TestAPIAdvanced(t *testing.T) {
                 // We can expect numbers with a given delta (50 +/-2)
                 "age":  NumberDelta(50, 2),
                 "pets": S{
-                    // We can expect a partial map. 
-                    // the keys not listed here will be ignored instead of returned as missing
+                    // We can expect a partial map.
+                    // The keys not listed here will be ignored instead of being reported as missing
                     PartialM{
                         "id":   "2",
                         // We can expect with regexp
@@ -164,7 +166,7 @@ func TestAPIVariables(t *testing.T) {
                 "age":  StoreVar("age"),
                 "pets": S{
                     M{
-                        // This shortcut act like a StoreVar("catid")
+                        // This shortcut acts like a StoreVar("catid")
                         "id":   "$catid$",
                     },
                 },
@@ -176,16 +178,16 @@ func TestAPIVariables(t *testing.T) {
     r.TestAssert(TestCase{
         Request: TestRequest{
             Method: "GET",
-            // Here we indicate to use the variable catid value. 
-            // for example this will call /api/cat/2 if value in previous request was 2
+            // Here we indicate to use the catid variable's value.
+            // For example this will call /api/cat/2 if the value in the previous request was 2
             Path:   "/api/cat/_catid_",
         },
         Response: TestResponse{
             Code: http.StatusOK,
             Body: M{
-                // LoadVar load the variable value and check with actual response value.
+                // LoadVar loads the variable value and checks it against the actual response value.
                 // Here it will report an error if cat's age is not the same as John's age
-                // which were extracted from previous request
+                // which was extracted from the previous request
                 "age":  LoadVar("age"),
             },
         },

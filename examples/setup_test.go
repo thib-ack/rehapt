@@ -8,7 +8,7 @@ import (
 	"github.com/thib-ack/rehapt"
 )
 
-// We create our Rehapt instance with little customization for tests
+// We create our Rehapt instance with a little customization for tests
 func setupRehapt(t *testing.T) *rehapt.Rehapt {
 	r := rehapt.NewRehapt(t, httpServer())
 	// Customize a bit for our tests
@@ -22,7 +22,7 @@ func httpServer() http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/user", func(w http.ResponseWriter, req *http.Request) {
-		// This API support only GET
+		// This API supports only GET
 		if req.Method != "GET" {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			_, _ = fmt.Fprintf(w, `{"error": "method not allowed"}`)
