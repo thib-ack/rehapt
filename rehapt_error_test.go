@@ -207,7 +207,7 @@ func TestErrResponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers does not match. Expected 200, got 401`); e != "" {
+	if e := ExpectError(err, `response code does not match. integers do not match. Expected 200, got 401`); e != "" {
 		t.Error(e)
 	}
 }
@@ -415,7 +415,7 @@ func TestErrBoolResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `bools does not match. Expected false, got true`); e != "" {
+	if e := ExpectError(err, `bools do not match. Expected false, got true`); e != "" {
 		t.Error(e)
 	}
 }
@@ -569,7 +569,7 @@ func TestErrIntResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `floats does not match. Expected 150, got 100`); e != "" {
+	if e := ExpectError(err, `floats do not match. Expected 150, got 100`); e != "" {
 		t.Error(e)
 	}
 }
@@ -594,7 +594,7 @@ func TestErrUintResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `floats does not match. Expected 150, got 100`); e != "" {
+	if e := ExpectError(err, `floats do not match. Expected 150, got 100`); e != "" {
 		t.Error(e)
 	}
 }
@@ -619,12 +619,12 @@ func TestErrFloatResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `floats does not match. Expected 100.5, got 100`); e != "" {
+	if e := ExpectError(err, `floats do not match. Expected 100.5, got 100`); e != "" {
 		t.Error(e)
 	}
 }
 
-func TestErrFloatReponseCode(t *testing.T) {
+func TestErrFloatResponseCode(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -644,12 +644,12 @@ func TestErrFloatReponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers does not match. Expected 200.5, got 200`); e != "" {
+	if e := ExpectError(err, `response code does not match. integers do not match. Expected 200.5, got 200`); e != "" {
 		t.Error(e)
 	}
 }
 
-func TestErrIntReponseCode(t *testing.T) {
+func TestErrIntResponseCode(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -669,12 +669,12 @@ func TestErrIntReponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers does not match. Expected -200, got 200`); e != "" {
+	if e := ExpectError(err, `response code does not match. integers do not match. Expected -200, got 200`); e != "" {
 		t.Error(e)
 	}
 }
 
-func TestErrUIntReponseCode(t *testing.T) {
+func TestErrUIntResponseCode(t *testing.T) {
 	c := setupTest(t)
 
 	c.server.HandleFunc("/api/test", func(w http.ResponseWriter, req *http.Request) {
@@ -694,7 +694,7 @@ func TestErrUIntReponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers does not match. Expected 250, got 200`); e != "" {
+	if e := ExpectError(err, `response code does not match. integers do not match. Expected 250, got 200`); e != "" {
 		t.Error(e)
 	}
 }
@@ -748,7 +748,7 @@ func TestErrResponseHeader(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'`); e != "" {
+	if e := ExpectError(err, `response headers do not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1997,8 +1997,8 @@ func TestErrMultipleErrors(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers does not match. Expected 200, got 400
-response headers does not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'
+	if e := ExpectError(err, `response code does not match. integers do not match. Expected 200, got 400
+response headers do not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'
 different map sizes. Expected length of 0, got 1. Expected map[] got map[key:value]`); e != "" {
 		t.Error(e)
 	}

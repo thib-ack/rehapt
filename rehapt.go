@@ -259,7 +259,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	// Check headers if requested
 	if testcase.Response.Headers != nil {
 		if err := r.compare(testcase.Response.Headers, response.Header); err != nil {
-			headersError = fmt.Errorf("response headers does not match. %v", err)
+			headersError = fmt.Errorf("response headers do not match. %v", err)
 		}
 	}
 
