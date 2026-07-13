@@ -57,7 +57,8 @@ func TestAPISimple(t *testing.T) {
     // and a description of the expected response
     // By default the response description is exhaustive. 
     // If an actual response field is not listed here, an error will be triggered
-    // of course if an expected field described here is not present in response, an error will be triggered too.
+    // of course if an expected field described here is not present in response, 
+	// an error will be triggered too.
     r.TestAssert(TestCase{
         Request: TestRequest{
             Method: "GET",
@@ -119,7 +120,8 @@ func TestAPIAdvanced(t *testing.T) {
                 "age":  NumberDelta(50, 2),
                 "pets": S{
                     // We can expect a partial map.
-                    // The keys not listed here will be ignored instead of being reported as missing
+                    // The keys not listed here will be ignored 
+					// instead of being reported as missing
                     PartialM{
                         "id":   "2",
                         // We can expect with regexp
@@ -127,7 +129,9 @@ func TestAPIAdvanced(t *testing.T) {
                         // We can unexpect a value
                         "type": Not("dog"),
                         // We can expect a slice without order constraint
-                        // here, ["mouse", "ball"] and ["ball", "mouse"] are valid responses
+                        // here, 
+						// ["mouse", "ball"] or ["ball", "mouse"] 
+						// are valid responses
                         "toys": UnsortedS{"mouse", "ball"},
                     },
                 },
@@ -162,7 +166,8 @@ func TestAPIVariables(t *testing.T) {
         Response: TestResponse{
             Code: http.StatusOK,
             Body: M{
-                // StoreVar doesn't check the actual value but store it in a variable named "age" here
+                // StoreVar doesn't check the actual value but 
+				// store it in a variable named "age" here
                 "age":  StoreVar("age"),
                 "pets": S{
                     M{
@@ -179,15 +184,18 @@ func TestAPIVariables(t *testing.T) {
         Request: TestRequest{
             Method: "GET",
             // Here we indicate to use the catid variable's value.
-            // For example this will call /api/cat/2 if the value in the previous request was 2
+            // For example this will call /api/cat/2
+			// if the value in the previous request was 2
             Path:   "/api/cat/_catid_",
         },
         Response: TestResponse{
             Code: http.StatusOK,
             Body: M{
-                // LoadVar loads the variable value and checks it against the actual response value.
-                // Here it will report an error if cat's age is not the same as John's age
-                // which was extracted from the previous request
+                // LoadVar loads the variable value and 
+				// checks it against the actual response value.
+                // Here it will report an error if cat's age is not 
+				// the same as John's age which was extracted from 
+				// the previous request
                 "age":  LoadVar("age"),
             },
         },
