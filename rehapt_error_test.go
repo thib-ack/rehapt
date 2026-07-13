@@ -207,7 +207,7 @@ func TestErrResponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers do not match. Expected 200, got 401`); e != "" {
+	if e := ExpectError(err, `• code: integers do not match. Expected 200, got 401`); e != "" {
 		t.Error(e)
 	}
 }
@@ -231,7 +231,7 @@ func TestErrResponseCodeCompareFn(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. value 401 is not within the range [200,299]`); e != "" {
+	if e := ExpectError(err, `• code: value 401 is not within the range [200,299]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -298,57 +298,57 @@ func TestErrResponseBodyType(t *testing.T) {
 		Error string
 	}{
 		// Int
-		{Path: "string", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Body: 1, Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: 1, Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: 1, Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: 1, Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: 1, Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Uint
-		{Path: "string", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Body: uint(1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: uint(1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: uint(1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: uint(1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: uint(1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// String
-		{Path: "int", Body: "ok", Error: "different kinds. Expected string, got float64"},
-		{Path: "float", Body: "ok", Error: "different kinds. Expected string, got float64"},
-		{Path: "bool", Body: "ok", Error: "different kinds. Expected string, got bool"},
-		{Path: "map", Body: "ok", Error: "different kinds. Expected string, got map"},
-		{Path: "slice", Body: "ok", Error: "different kinds. Expected string, got slice"},
+		{Path: "int", Body: "ok", Error: "• body: different kinds. Expected string, got float64"},
+		{Path: "float", Body: "ok", Error: "• body: different kinds. Expected string, got float64"},
+		{Path: "bool", Body: "ok", Error: "• body: different kinds. Expected string, got bool"},
+		{Path: "map", Body: "ok", Error: "• body: different kinds. Expected string, got map"},
+		{Path: "slice", Body: "ok", Error: "• body: different kinds. Expected string, got slice"},
 		// Float32
-		{Path: "string", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Body: float32(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: float32(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: float32(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: float32(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: float32(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Float64
-		{Path: "string", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
-		{Path: "bool", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
-		{Path: "map", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
-		{Path: "slice", Body: float64(0.1), Error: "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
+		{Path: "string", Body: float64(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"},
+		{Path: "bool", Body: float64(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got bool"},
+		{Path: "map", Body: float64(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got map"},
+		{Path: "slice", Body: float64(0.1), Error: "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got slice"},
 		// Bool
-		{Path: "string", Body: true, Error: "different kinds. Expected bool, got string"},
-		{Path: "int", Body: true, Error: "different kinds. Expected bool, got float64"},
-		{Path: "float", Body: true, Error: "different kinds. Expected bool, got float64"},
-		{Path: "map", Body: true, Error: "different kinds. Expected bool, got map"},
-		{Path: "slice", Body: true, Error: "different kinds. Expected bool, got slice"},
+		{Path: "string", Body: true, Error: "• body: different kinds. Expected bool, got string"},
+		{Path: "int", Body: true, Error: "• body: different kinds. Expected bool, got float64"},
+		{Path: "float", Body: true, Error: "• body: different kinds. Expected bool, got float64"},
+		{Path: "map", Body: true, Error: "• body: different kinds. Expected bool, got map"},
+		{Path: "slice", Body: true, Error: "• body: different kinds. Expected bool, got slice"},
 		// Map
-		{Path: "string", Body: M{}, Error: "different kinds. Expected map, got string"},
-		{Path: "int", Body: M{}, Error: "different kinds. Expected map, got float64"},
-		{Path: "float", Body: M{}, Error: "different kinds. Expected map, got float64"},
-		{Path: "bool", Body: M{}, Error: "different kinds. Expected map, got bool"},
-		{Path: "slice", Body: M{}, Error: "different kinds. Expected map, got slice"},
+		{Path: "string", Body: M{}, Error: "• body: different kinds. Expected map, got string"},
+		{Path: "int", Body: M{}, Error: "• body: different kinds. Expected map, got float64"},
+		{Path: "float", Body: M{}, Error: "• body: different kinds. Expected map, got float64"},
+		{Path: "bool", Body: M{}, Error: "• body: different kinds. Expected map, got bool"},
+		{Path: "slice", Body: M{}, Error: "• body: different kinds. Expected map, got slice"},
 		// Slice
-		{Path: "string", Body: S{}, Error: "different kinds. Expected slice, got string"},
-		{Path: "int", Body: S{}, Error: "different kinds. Expected slice, got float64"},
-		{Path: "float", Body: S{}, Error: "different kinds. Expected slice, got float64"},
-		{Path: "bool", Body: S{}, Error: "different kinds. Expected slice, got bool"},
-		{Path: "map", Body: S{}, Error: "different kinds. Expected slice, got map"},
+		{Path: "string", Body: S{}, Error: "• body: different kinds. Expected slice, got string"},
+		{Path: "int", Body: S{}, Error: "• body: different kinds. Expected slice, got float64"},
+		{Path: "float", Body: S{}, Error: "• body: different kinds. Expected slice, got float64"},
+		{Path: "bool", Body: S{}, Error: "• body: different kinds. Expected slice, got bool"},
+		{Path: "map", Body: S{}, Error: "• body: different kinds. Expected slice, got map"},
 		// Struct
-		{Path: "string", Body: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "int", Body: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "float", Body: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "bool", Body: struct{}{}, Error: "unhandled type struct {}"},
-		{Path: "slice", Body: struct{}{}, Error: "unhandled type struct {}"},
+		{Path: "string", Body: struct{}{}, Error: "• body: unhandled type struct {}"},
+		{Path: "int", Body: struct{}{}, Error: "• body: unhandled type struct {}"},
+		{Path: "float", Body: struct{}{}, Error: "• body: unhandled type struct {}"},
+		{Path: "bool", Body: struct{}{}, Error: "• body: unhandled type struct {}"},
+		{Path: "slice", Body: struct{}{}, Error: "• body: unhandled type struct {}"},
 		// Unhandled
-		{Path: "string", Body: complex(1, 2), Error: "unhandled type complex128"},
+		{Path: "string", Body: complex(1, 2), Error: "• body: unhandled type complex128"},
 	}
 
 	for _, test := range tests {
@@ -390,7 +390,7 @@ func TestErrStringResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `strings do not match. Expected 'nok', got 'ok'`); e != "" {
+	if e := ExpectError(err, `• body: strings do not match. Expected 'nok', got 'ok'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -415,7 +415,7 @@ func TestErrBoolResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `bools do not match. Expected false, got true`); e != "" {
+	if e := ExpectError(err, `• body: bools do not match. Expected false, got true`); e != "" {
 		t.Error(e)
 	}
 }
@@ -444,7 +444,7 @@ func TestErrNotResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected not 10, got 10`); e != "" {
+	if e := ExpectError(err, `• body: expected not 10, got 10`); e != "" {
 		t.Error(e)
 	}
 
@@ -460,7 +460,7 @@ func TestErrNotResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected not hello, got hello`); e != "" {
+	if e := ExpectError(err, `• body: expected not hello, got hello`); e != "" {
 		t.Error(e)
 	}
 }
@@ -485,7 +485,7 @@ func TestErrAndResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `regexp '^h...$' does not match 'hello'`); e != "" {
+	if e := ExpectError(err, `• body: regexp '^h...$' does not match 'hello'`); e != "" {
 		t.Error(e)
 	}
 
@@ -501,7 +501,7 @@ func TestErrAndResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `strings do not match. Expected 'other', got 'hello'`); e != "" {
+	if e := ExpectError(err, `• body: strings do not match. Expected 'other', got 'hello'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -526,8 +526,8 @@ func TestErrOrResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `strings do not match. Expected 'byebye', got 'hello'
-strings do not match. Expected 'world', got 'hello'`); e != "" {
+	if e := ExpectError(err, `• body: strings do not match. Expected 'byebye', got 'hello'
+• body: strings do not match. Expected 'world', got 'hello'`); e != "" {
 		t.Error(e)
 	}
 
@@ -543,8 +543,8 @@ strings do not match. Expected 'world', got 'hello'`); e != "" {
 		},
 	})
 
-	if e := ExpectError(err, `strings do not match. Expected 'world', got 'hello'
-strings do not match. Expected 'ciao', got 'hello'`); e != "" {
+	if e := ExpectError(err, `• body: strings do not match. Expected 'world', got 'hello'
+• body: strings do not match. Expected 'ciao', got 'hello'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -569,7 +569,7 @@ func TestErrIntResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `floats do not match. Expected 150, got 100`); e != "" {
+	if e := ExpectError(err, `• body: floats do not match. Expected 150, got 100`); e != "" {
 		t.Error(e)
 	}
 }
@@ -594,7 +594,7 @@ func TestErrUintResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `floats do not match. Expected 150, got 100`); e != "" {
+	if e := ExpectError(err, `• body: floats do not match. Expected 150, got 100`); e != "" {
 		t.Error(e)
 	}
 }
@@ -619,7 +619,7 @@ func TestErrFloatResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `floats do not match. Expected 100.5, got 100`); e != "" {
+	if e := ExpectError(err, `• body: floats do not match. Expected 100.5, got 100`); e != "" {
 		t.Error(e)
 	}
 }
@@ -644,7 +644,7 @@ func TestErrFloatResponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers do not match. Expected 200.5, got 200`); e != "" {
+	if e := ExpectError(err, `• code: integers do not match. Expected 200.5, got 200`); e != "" {
 		t.Error(e)
 	}
 }
@@ -669,7 +669,7 @@ func TestErrIntResponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers do not match. Expected -200, got 200`); e != "" {
+	if e := ExpectError(err, `• code: integers do not match. Expected -200, got 200`); e != "" {
 		t.Error(e)
 	}
 }
@@ -694,7 +694,7 @@ func TestErrUIntResponseCode(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers do not match. Expected 250, got 200`); e != "" {
+	if e := ExpectError(err, `• code: integers do not match. Expected 250, got 200`); e != "" {
 		t.Error(e)
 	}
 }
@@ -720,7 +720,7 @@ func TestErrUnmarshalResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `cannot unmarshal response body. invalid character 'i' looking for beginning of value`); e != "" {
+	if e := ExpectError(err, `• body: cannot unmarshal response body. invalid character 'i' looking for beginning of value`); e != "" {
 		t.Error(e)
 	}
 }
@@ -748,7 +748,7 @@ func TestErrResponseHeader(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response headers do not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'`); e != "" {
+	if e := ExpectError(err, `• headers.X-Custom[0]: strings do not match. Expected 'custom value 123', got 'not right value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -772,7 +772,7 @@ func TestErrNilResponseBody(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different kinds. Expected string, got <nil>`); e != "" {
+	if e := ExpectError(err, `• body: different kinds. Expected string, got <nil>`); e != "" {
 		t.Error(e)
 	}
 }
@@ -818,7 +818,7 @@ func TestErrResponseBodyExpectedNil(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected is nil but got success`); e != "" {
+	if e := ExpectError(err, `• body: expected is nil but got success`); e != "" {
 		t.Error(e)
 	}
 }
@@ -843,7 +843,7 @@ func TestErrSliceDifferentSize(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different slice sizes. Expected length of 1, got 2. Expected [A] got [A B]`); e != "" {
+	if e := ExpectError(err, `• body: different slice sizes. Expected length of 1, got 2. Expected [A] got [A B]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -868,7 +868,7 @@ func TestErrSliceElementDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `slice element 1 does not match. strings do not match. Expected 'C', got 'B'`); e != "" {
+	if e := ExpectError(err, `• body[1]: strings do not match. Expected 'C', got 'B'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -893,7 +893,7 @@ func TestErrMapDifferentKeyType(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different map key types. Expected int, got string`); e != "" {
+	if e := ExpectError(err, `• body: different map key types. Expected int, got string`); e != "" {
 		t.Error(e)
 	}
 }
@@ -919,8 +919,8 @@ func TestErrMapDifferentSize(t *testing.T) {
 	})
 
 	// as printed order of map is unknown, we have to expect any of the two possibilities
-	e1 := ExpectError(err, `different map sizes. Expected length of 2, got 1. Expected map[foo:bar key:value] got map[key:value]`)
-	e2 := ExpectError(err, `different map sizes. Expected length of 2, got 1. Expected map[key:value foo:bar] got map[key:value]`)
+	e1 := ExpectError(err, `• body: different map sizes. Expected length of 2, got 1. Expected map[foo:bar key:value] got map[key:value]`)
+	e2 := ExpectError(err, `• body: different map sizes. Expected length of 2, got 1. Expected map[key:value foo:bar] got map[key:value]`)
 	if !(e1 == "" || e2 == "") {
 		t.Error(e1)
 	}
@@ -946,7 +946,7 @@ func TestErrMapKeyNotFound(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected key foo not found in actual map[key:value]`); e != "" {
+	if e := ExpectError(err, `• body: expected key foo not found in actual map[key:value]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -971,7 +971,7 @@ func TestErrMapElementDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [key] does not match. strings do not match. Expected 'bar', got 'value'`); e != "" {
+	if e := ExpectError(err, `• body.key: strings do not match. Expected 'bar', got 'value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -996,7 +996,7 @@ func TestErrNumberDeltaNotNumber(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string`); e != "" {
+	if e := ExpectError(err, `• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1021,7 +1021,7 @@ func TestErrNumberDeltaLowerValue(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `max difference between 450 and 500 allowed is 49, but difference was 50`); e != "" {
+	if e := ExpectError(err, `• body: max difference between 450 and 500 allowed is 49, but difference was 50`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1046,7 +1046,7 @@ func TestErrNumberDeltaGreaterValue(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `max difference between 550 and 500 allowed is 49, but difference was 50`); e != "" {
+	if e := ExpectError(err, `• body: max difference between 550 and 500 allowed is 49, but difference was 50`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1071,7 +1071,7 @@ func TestErrNumberRangeNotNumber(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string`); e != "" {
+	if e := ExpectError(err, `• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1096,7 +1096,7 @@ func TestErrNumberRangeLowerValue(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `value 500 is not within the range [600,700]`); e != "" {
+	if e := ExpectError(err, `• body: value 500 is not within the range [600,700]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1121,7 +1121,7 @@ func TestErrNumberRangeGreaterValue(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `value 500 is not within the range [300,400]`); e != "" {
+	if e := ExpectError(err, `• body: value 500 is not within the range [300,400]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1146,7 +1146,7 @@ func TestErrNumberRangeInvalidRange(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `range [600,400] is invalid`); e != "" {
+	if e := ExpectError(err, `• body: range [600,400] is invalid`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1174,7 +1174,7 @@ func TestErrTimeDeltaNotString(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different kinds. Expected string, got float64`); e != "" {
+	if e := ExpectError(err, `• body: different kinds. Expected string, got float64`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1202,7 +1202,7 @@ func TestErrTimeDeltaNotTime(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `invalid time. parsing time "hello" as "2006-01-02T15:04:05Z07:00": cannot parse "hello" as "2006"`); e != "" {
+	if e := ExpectError(err, `• body: invalid time. parsing time "hello" as "2006-01-02T15:04:05Z07:00": cannot parse "hello" as "2006"`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1230,7 +1230,7 @@ func TestErrTimeDeltaBeforeValue(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `max difference between 2020-04-11 20:10:29 +0000 UTC and 2020-04-11 20:10:30.123 +0000 UTC allowed is 1s, but difference was -1.123s`); e != "" {
+	if e := ExpectError(err, `• body: max difference between 2020-04-11 20:10:29 +0000 UTC and 2020-04-11 20:10:30.123 +0000 UTC allowed is 1s, but difference was -1.123s`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1258,7 +1258,7 @@ func TestErrTimeDeltaAfterValue(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `max difference between 2020-04-11 20:10:32 +0000 UTC and 2020-04-11 20:10:30.123 +0000 UTC allowed is 1s, but difference was 1.877s`); e != "" {
+	if e := ExpectError(err, `• body: max difference between 2020-04-11 20:10:32 +0000 UTC and 2020-04-11 20:10:30.123 +0000 UTC allowed is 1s, but difference was 1.877s`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1294,7 +1294,7 @@ func TestErrStoreVarInvalidVarname(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [stats] does not match. invalid variable name my var`); e != "" {
+	if e := ExpectError(err, `• body.stats: invalid variable name my var`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1359,7 +1359,7 @@ func TestErrLoadVarShortcutUnknownVariable(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [status] does not match. variable unknownvar is not defined`); e != "" {
+	if e := ExpectError(err, `• body.status: variable unknownvar is not defined`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1418,7 +1418,7 @@ func TestErrLoadVarShortcutInvalidVariableType(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [status] does not match. variable var of type rehapt.M cannot be used inside string`); e != "" {
+	if e := ExpectError(err, `• body.status: variable var of type rehapt.M cannot be used inside string`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1443,7 +1443,7 @@ func TestErrUnsortedSliceDifferentSize(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different slice sizes. Expected length of 1, got 2. Expected [A] got [A B]`); e != "" {
+	if e := ExpectError(err, `• body: different slice sizes. Expected length of 1, got 2. Expected [A] got [A B]`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1468,8 +1468,8 @@ func TestErrUnsortedSliceElementNotFound(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected element E at index 2 not found
-actual elements at indexes [0] not found`); e != "" {
+	if e := ExpectError(err, `• body: expected element E at index 2 not found
+• body: actual elements at indexes [0] not found`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1494,7 +1494,7 @@ func TestErrPartialMapKeyNotFound(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected key foo not found`); e != "" {
+	if e := ExpectError(err, `• body: expected key foo not found`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1519,7 +1519,7 @@ func TestErrPartialMapElementDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [key] does not match. strings do not match. Expected 'bar', got 'value'`); e != "" {
+	if e := ExpectError(err, `• body.key: strings do not match. Expected 'bar', got 'value'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1546,7 +1546,7 @@ func TestErrRegexpFailParsing(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "map element [stats] does not match. error parsing regexp: missing closing ): `^[0-9](3 - .* - end$`"); e != "" {
+	if e := ExpectError(err, "• body.stats: error parsing regexp: missing closing ): `^[0-9](3 - .* - end$`"); e != "" {
 		t.Error(e)
 	}
 }
@@ -1573,7 +1573,7 @@ func TestErrRegexpNotString(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [stats] does not match. different kinds. Expected string, got float64`); e != "" {
+	if e := ExpectError(err, `• body.stats: different kinds. Expected string, got float64`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1600,7 +1600,7 @@ func TestErrRegexpReplaceUnknownVariable(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [stats] does not match. variable who is not defined`); e != "" {
+	if e := ExpectError(err, `• body.stats: variable who is not defined`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1627,7 +1627,7 @@ func TestErrRegexpDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [stats] does not match. regexp '^[a-z]{3} - .* - end$' does not match '150 - high - end'`); e != "" {
+	if e := ExpectError(err, `• body.stats: regexp '^[a-z]{3} - .* - end$' does not match '150 - high - end'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1652,7 +1652,7 @@ func TestErrRegexpVarsNotString(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `different kinds. Expected string, got float64`); e != "" {
+	if e := ExpectError(err, `• body: different kinds. Expected string, got float64`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1679,7 +1679,7 @@ func TestErrRegexpVarsFailParsing(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "map element [stats] does not match. error parsing regexp: missing closing ): `^[0-9](3 - .* - end$`"); e != "" {
+	if e := ExpectError(err, "• body.stats: error parsing regexp: missing closing ): `^[0-9](3 - .* - end$`"); e != "" {
 		t.Error(e)
 	}
 }
@@ -1706,7 +1706,7 @@ func TestErrRegexpVarsDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [stats] does not match. regexp '^[a-z]{3} - (.*) - end$' does not match '150 - high - end'`); e != "" {
+	if e := ExpectError(err, `• body.stats: regexp '^[a-z]{3} - (.*) - end$' does not match '150 - high - end'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1733,7 +1733,7 @@ func TestErrRegexpVarsDoesInvalidVarname(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [stats] does not match. invalid variable name v 1`); e != "" {
+	if e := ExpectError(err, `• body.stats: invalid variable name v 1`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1760,7 +1760,7 @@ func TestErrRegexpVarsOverflowIndexIgnored(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `map element [stats] does not match. expected variable index 2 overflow regexp group count of 2`); e != "" {
+	if e := ExpectError(err, `• body.stats: expected variable index 2 overflow regexp group count of 2`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1786,7 +1786,7 @@ func TestErrRawUnhandled(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"); e != "" {
+	if e := ExpectError(err, "• body: different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got string"); e != "" {
 		t.Error(e)
 	}
 }
@@ -1812,7 +1812,7 @@ func TestErrRawStringDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "strings do not match. Expected 'Hello this is plain text', got 'Hello this is plain text 1234'"); e != "" {
+	if e := ExpectError(err, "• body: strings do not match. Expected 'Hello this is plain text', got 'Hello this is plain text 1234'"); e != "" {
 		t.Error(e)
 	}
 }
@@ -1838,7 +1838,7 @@ func TestErrRawRegexpFailParsing(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "error parsing regexp: missing closing ): `^H[a-z ]+ ([0-9]+$`"); e != "" {
+	if e := ExpectError(err, "• body: error parsing regexp: missing closing ): `^H[a-z ]+ ([0-9]+$`"); e != "" {
 		t.Error(e)
 	}
 }
@@ -1864,7 +1864,7 @@ func TestErrRawRegexpDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "regexp '^H[a-z ]+ [0-9]$' does not match 'Hello this is plain text 1234'"); e != "" {
+	if e := ExpectError(err, "• body: regexp '^H[a-z ]+ [0-9]$' does not match 'Hello this is plain text 1234'"); e != "" {
 		t.Error(e)
 	}
 }
@@ -1890,7 +1890,7 @@ func TestErrRawRegexpVarsFailParsing(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, "error parsing regexp: missing closing ): `^H[a-z ]+ ([0-9]+$`"); e != "" {
+	if e := ExpectError(err, "• body: error parsing regexp: missing closing ): `^H[a-z ]+ ([0-9]+$`"); e != "" {
 		t.Error(e)
 	}
 }
@@ -1916,7 +1916,7 @@ func TestErrRawRegexpVarsDoesNotMatch(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `regexp '^H[a-z ]+ ([0-9])$' does not match 'Hello this is plain text 1234'`); e != "" {
+	if e := ExpectError(err, `• body: regexp '^H[a-z ]+ ([0-9])$' does not match 'Hello this is plain text 1234'`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1942,7 +1942,7 @@ func TestErrRawRegexpVarsInvalidVarname(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `invalid variable name counter 1`); e != "" {
+	if e := ExpectError(err, `• body: invalid variable name counter 1`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1968,7 +1968,7 @@ func TestErrRawRegexpVarsOverflowIndex(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `expected variable index 2 overflow regexp group count of 2`); e != "" {
+	if e := ExpectError(err, `• body: expected variable index 2 overflow regexp group count of 2`); e != "" {
 		t.Error(e)
 	}
 }
@@ -1997,9 +1997,9 @@ func TestErrMultipleErrors(t *testing.T) {
 		},
 	})
 
-	if e := ExpectError(err, `response code does not match. integers do not match. Expected 200, got 400
-response headers do not match. map element [X-Custom] does not match. slice element 0 does not match. strings do not match. Expected 'custom value 123', got 'not right value'
-different map sizes. Expected length of 0, got 1. Expected map[] got map[key:value]`); e != "" {
+	if e := ExpectError(err, `• code: integers do not match. Expected 200, got 400
+• headers.X-Custom[0]: strings do not match. Expected 'custom value 123', got 'not right value'
+• body: different map sizes. Expected length of 0, got 1. Expected map[] got map[key:value]`); e != "" {
 		t.Error(e)
 	}
 }

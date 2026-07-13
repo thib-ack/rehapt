@@ -214,7 +214,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 		}
 	} else if p, ok := testcase.Request.Path.(string); ok == true {
 		// Default to auto-replace
-		requestPath, err = r.replaceVars(p)
+		requestPath, err = r.replaceVars(compareCtx{}, p)
 		if err != nil {
 			return fmt.Errorf("error while replacing variables in path. %v", err)
 		}
@@ -247,29 +247,29 @@ func (r *Rehapt) Test(testcase TestCase) error {
 	// And start to check result.
 	// But don't stop on first error, for example if http code doesn't match,
 	// we can still compare headers and body.
-	var codeError error
-	var headersError error
-	var bodyError error
+	var codeErrors []error
+	var headersErrors []error
+	var bodyErrors []error
 
 	// First check HTTP response code
-	if err := r.compare(testcase.Response.Code, response.StatusCode); err != nil {
-		codeError = fmt.Errorf("response code does not match. %v", err)
+	if errs := r.compare(testcase.Response.Code, response.StatusCode, "code"); len(errs) > 0 {
+		codeErrors = errs
 	}
 
 	// Check headers if requested
 	if testcase.Response.Headers != nil {
-		if err := r.compare(testcase.Response.Headers, response.Header); err != nil {
-			headersError = fmt.Errorf("response headers do not match. %v", err)
+		if errs := r.compare(testcase.Response.Headers, response.Header, "headers"); len(errs) > 0 {
+			headersErrors = errs
 		}
 	}
 
-	bodyError = func() error {
+	bodyErrors = func() []error {
 		var responseBody interface{}
 		if response.Body != nil {
 			data, err := ioutil.ReadAll(response.Body)
 			defer response.Body.Close()
 			if err != nil {
-				return fmt.Errorf("cannot read response body. %v", err)
+				return []error{fmt.Errorf("body: cannot read response body. %v", err)}
 			}
 
 			if len(data) > 0 {
@@ -283,7 +283,7 @@ func (r *Rehapt) Test(testcase TestCase) error {
 					// the compare function will handle if that's expected or not
 					// but we don't want to report an unmarshal error
 					if err != io.EOF {
-						return fmt.Errorf("cannot unmarshal response body. %v", err)
+						return []error{fmt.Errorf("body: cannot unmarshal response body. %v", err)}
 					}
 				}
 			}
@@ -293,25 +293,25 @@ func (r *Rehapt) Test(testcase TestCase) error {
 		// We could have used reflect.DeepEqual but we want finer comparison,
 		// which allow ignoring some fields, storing variables, using variables, etc.
 		// This is the main purpose of this library
-		if err := r.compare(testcase.Response.Body, responseBody); err != nil {
-			return err
+		if errs := r.compare(testcase.Response.Body, responseBody, "body"); len(errs) > 0 {
+			return errs
 		}
 
 		return nil
 	}()
 
 	// Build an error based on the 3 possible errors on code, headers and body
-	if codeError != nil || headersError != nil || bodyError != nil {
-		e := ""
-		if codeError != nil {
-			e += codeError.Error() + "\n"
-		}
-		if headersError != nil {
-			e += headersError.Error() + "\n"
-		}
-		if bodyError != nil {
-			e += bodyError.Error()
-		}
+	e := ""
+	for _, codeError := range codeErrors {
+		e += "• " + codeError.Error() + "\n"
+	}
+	for _, headersError := range headersErrors {
+		e += "• " + headersError.Error() + "\n"
+	}
+	for _, bodyError := range bodyErrors {
+		e += "• " + bodyError.Error() + "\n"
+	}
+	if e != "" {
 		return errors.New(strings.TrimSuffix(e, "\n"))
 	}
 	return nil
@@ -355,7 +355,7 @@ func (r *Rehapt) TestAssert(testcase TestCase) {
 			callingStack = append(callingStack, fmt.Sprintf("%v:%d: %v", filename, line, functionName))
 		}
 
-		message := fmt.Sprintf("%v\nError: %v", strings.Join(callingStack, "\n"), err)
+		message := fmt.Sprintf("%v\nErrors:\n%v", strings.Join(callingStack, "\n"), err)
 
 		if r.errorHandler != nil {
 			// Start with a \n because testing.T Errorf() prints data and does not start on a new line
@@ -469,20 +469,21 @@ func (r *Rehapt) initComparators() {
 	}
 }
 
-func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
+func (r *Rehapt) compare(expected interface{}, actual interface{}, path string) []error {
 	// shortcut: nil == nil
 	if expected == nil && actual == nil {
 		return nil
 	}
 	// shortcut too
 	if expected == nil {
-		return fmt.Errorf("expected is nil but got %v", actual)
+		return []error{fmt.Errorf("%v: expected is nil but got %v", path, actual)}
 	}
 
 	expectedType := reflect.TypeOf(expected)
 	actualType := reflect.TypeOf(actual)
 
 	ctx := compareCtx{
+		Path:          path,
 		Expected:      expected,
 		ExpectedKind:  expectedType.Kind(),
 		ExpectedType:  expectedType,
@@ -508,7 +509,7 @@ func (r *Rehapt) compare(expected interface{}, actual interface{}) error {
 			}
 		}
 	}
-	return fmt.Errorf("unhandled type %T", expected)
+	return []error{ctx.Errorf("unhandled type %T", expected)}
 }
 
 func cloneHeader(header http.Header) http.Header {

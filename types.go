@@ -57,7 +57,7 @@ type S []interface{}
 // `UnsortedS{Any(), "x"}` would fail against `["x", "y"]`
 type UnsortedS []interface{}
 
-type CompareFn func(r *Rehapt, ctx compareCtx) error
+type CompareFn func(r *Rehapt, ctx compareCtx) []error
 
 type ReplaceFn func(r *Rehapt) (string, error)
 
@@ -68,9 +68,8 @@ func RawMarshaler(v interface{}) ([]byte, error) {
 		return []byte(s), nil
 	} else if b, ok := v.([]byte); ok == true {
 		return b, nil
-	} else {
-		return nil, fmt.Errorf("only string or []byte supported")
 	}
+	return nil, fmt.Errorf("only string or []byte supported")
 }
 
 type UnmarshalFn func(data []byte, v interface{}) error
@@ -89,6 +88,7 @@ func RawUnmarshaler(data []byte, out interface{}) error {
 }
 
 type compareCtx struct {
+	Path          string
 	Expected      interface{}
 	ExpectedKind  reflect.Kind
 	ExpectedType  reflect.Type
@@ -98,8 +98,16 @@ type compareCtx struct {
 	ActualValue   reflect.Value
 }
 
+func (c *compareCtx) Errorf(format string, a ...interface{}) error {
+	prefix := ""
+	if c.Path != "" {
+		prefix = c.Path + ": "
+	}
+	return fmt.Errorf(prefix+format, a...)
+}
+
 type comparator struct {
 	ExpectedKind reflect.Kind
 	ExpectedType reflect.Type
-	Compare      func(compareCtx) error
+	Compare      func(compareCtx) []error
 }

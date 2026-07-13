@@ -38,8 +38,12 @@ func (r *Rehapt) LookupVariableString(name string) (string, bool) {
 // SetVariable allows manually defining a variable.
 // Variable names are strings, however values can be any type
 func (r *Rehapt) SetVariable(name string, value interface{}) error {
+	return r.setVariable(compareCtx{}, name, value)
+}
+
+func (r *Rehapt) setVariable(ctx compareCtx, name string, value interface{}) error {
 	if r.validVarname(name) == false {
-		return fmt.Errorf("invalid variable name %v", name)
+		return ctx.Errorf("invalid variable name %v", name)
 	}
 	r.variables[name] = value
 	return nil
@@ -97,11 +101,11 @@ func (r *Rehapt) validVarname(name string) bool {
 }
 
 func (r *Rehapt) ReplaceVars(str string) string {
-	s, _ := r.replaceVars(str)
+	s, _ := r.replaceVars(compareCtx{}, str)
 	return s
 }
 
-func (r *Rehapt) replaceVars(str string) (string, error) {
+func (r *Rehapt) replaceVars(ctx compareCtx, str string) (string, error) {
 	matches := r.variableLoadRegexp.FindAllStringSubmatchIndex(str, -1)
 	if len(matches) == 0 {
 		return str, nil
@@ -130,7 +134,7 @@ func (r *Rehapt) replaceVars(str string) (string, error) {
 		// Make sure variable exists, or report error
 		ivalue, ok := r.variables[varname]
 		if ok == false {
-			return "", fmt.Errorf("variable %v is not defined", varname)
+			return "", ctx.Errorf("variable %v is not defined", varname)
 		}
 
 		// Try to convert value to string
@@ -164,7 +168,7 @@ func (r *Rehapt) replaceVars(str string) (string, error) {
 		case bool:
 			value = strconv.FormatBool(ival)
 		default:
-			return "", fmt.Errorf("variable %v of type %T cannot be used inside string", varname, ivalue)
+			return "", ctx.Errorf("variable %v of type %T cannot be used inside string", varname, ivalue)
 		}
 
 		replaced = append(replaced, str[offset:prefix]...)

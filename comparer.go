@@ -1,12 +1,9 @@
 package rehapt
 
 import (
-	"errors"
-	"fmt"
 	"math"
 	"reflect"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -17,11 +14,11 @@ func NoReplacement(s string) ReplaceFn {
 }
 
 func TimeDeltaLayout(t time.Time, delta time.Duration, layout string) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		// TimeDelta can only compare with actual string values
 		err := r.requireKind(ctx, reflect.String)
 		if err != nil {
-			return err
+			return []error{err}
 		}
 
 		// Use specific time format or default one if not specified
@@ -33,12 +30,12 @@ func TimeDeltaLayout(t time.Time, delta time.Duration, layout string) CompareFn 
 		// Parse the actual value given the format
 		actualTime, err := time.Parse(timeFmt, ctx.ActualValue.String())
 		if err != nil {
-			return fmt.Errorf("invalid time. %v", err)
+			return []error{ctx.Errorf("invalid time. %v", err)}
 		}
 
 		dt := t.Sub(actualTime)
 		if dt < -delta || dt > delta {
-			return fmt.Errorf("max difference between %v and %v allowed is %v, but difference was %v", t, actualTime, delta, dt)
+			return []error{ctx.Errorf("max difference between %v and %v allowed is %v, but difference was %v", t, actualTime, delta, dt)}
 		}
 		return nil
 	}
@@ -56,9 +53,9 @@ func TimeDelta(t time.Time, delta time.Duration) CompareFn {
 // Delta is compared to math.Abs(expected - actual) which explains why
 // if your expected value is 10 with a delta of 3, actual value will match from 7 to 13.
 func NumberDelta(value float64, delta float64) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		if ctx.Actual == nil {
-			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
+			return []error{ctx.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")}
 		}
 		actualFloatValue := 0.0
 		switch ctx.ActualType.Kind() {
@@ -69,12 +66,12 @@ func NumberDelta(value float64, delta float64) CompareFn {
 		case reflect.Float32, reflect.Float64:
 			actualFloatValue = ctx.ActualValue.Float()
 		default:
-			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
+			return []error{ctx.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())}
 		}
 
 		dt := math.Abs(value - actualFloatValue)
 		if dt > delta {
-			return fmt.Errorf("max difference between %v and %v allowed is %v, but difference was %v", value, ctx.Actual, delta, dt)
+			return []error{ctx.Errorf("max difference between %v and %v allowed is %v, but difference was %v", value, ctx.Actual, delta, dt)}
 		}
 		return nil
 	}
@@ -82,13 +79,13 @@ func NumberDelta(value float64, delta float64) CompareFn {
 
 // NumberRange allows comparing a number value within a given [min-max] inclusive range
 func NumberRange(min float64, max float64) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		if min > max {
-			return fmt.Errorf("range [%v,%v] is invalid", min, max)
+			return []error{ctx.Errorf("range [%v,%v] is invalid", min, max)}
 		}
 
 		if ctx.Actual == nil {
-			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")
+			return []error{ctx.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got <nil>")}
 		}
 		actualFloatValue := 0.0
 		switch ctx.ActualType.Kind() {
@@ -99,11 +96,11 @@ func NumberRange(min float64, max float64) CompareFn {
 		case reflect.Float32, reflect.Float64:
 			actualFloatValue = ctx.ActualValue.Float()
 		default:
-			return fmt.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())
+			return []error{ctx.Errorf("different kinds. Expected int{8,16,32,64}, uint{8,16,32,64} or float{32,64}, got %v", ctx.ActualType.Kind())}
 		}
 
 		if actualFloatValue < min || actualFloatValue > max {
-			return fmt.Errorf("value %v is not within the range [%v,%v]", ctx.Actual, min, max)
+			return []error{ctx.Errorf("value %v is not within the range [%v,%v]", ctx.Actual, min, max)}
 		}
 		return nil
 	}
@@ -116,27 +113,27 @@ func NumberRange(min float64, max float64) CompareFn {
 // Note that Regexp uses unanchored semantics, which means you have to
 // use ^ and $ to make sure you compare the full string
 func Regexp(regex string) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		// Regexp can only compare with actual string values
 		err := r.requireKind(ctx, reflect.String)
 		if err != nil {
-			return err
+			return []error{err}
 		}
 
 		actualStr := ctx.ActualValue.String()
 
 		// Make variable replacement
-		regex, err = r.replaceVars(regex)
+		regex, err = r.replaceVars(ctx, regex)
 		if err != nil {
-			return err
+			return []error{err}
 		}
 
 		re, err := regexp.Compile(regex)
 		if err != nil {
-			return err
+			return []error{ctx.Errorf("%v", err)}
 		}
 		if re.MatchString(actualStr) == false {
-			return fmt.Errorf("regexp '%v' does not match '%v'", regex, actualStr)
+			return []error{ctx.Errorf("regexp '%v' does not match '%v'", regex, actualStr)}
 		}
 		return nil
 	}
@@ -155,36 +152,36 @@ func Regexp(regex string) CompareFn {
 // Note that RegexpVars uses unanchored semantics, which means you have to
 // use ^ and $ to make sure you compare the full string
 func RegexpVars(regex string, vars map[int]string) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		// RegexpVars can only compare with actual string values
 		err := r.requireKind(ctx, reflect.String)
 		if err != nil {
-			return err
+			return []error{err}
 		}
 
 		actualStr := ctx.ActualValue.String()
 
 		// Make variable replacement
-		regex, err = r.replaceVars(regex)
+		regex, err = r.replaceVars(ctx, regex)
 		if err != nil {
-			return err
+			return []error{err}
 		}
 
 		re, err := regexp.Compile(regex)
 		if err != nil {
-			return err
+			return []error{ctx.Errorf("%v", err)}
 		}
 		elements := re.FindStringSubmatch(actualStr)
 		if len(elements) == 0 {
-			return fmt.Errorf("regexp '%v' does not match '%v'", regex, actualStr)
+			return []error{ctx.Errorf("regexp '%v' does not match '%v'", regex, actualStr)}
 		}
 
 		for groupid, varname := range vars {
 			if groupid >= len(elements) {
-				return fmt.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))
+				return []error{ctx.Errorf("expected variable index %d overflow regexp group count of %d", groupid, len(elements))}
 			}
-			if err := r.SetVariable(varname, elements[groupid]); err != nil {
-				return err
+			if err2 := r.setVariable(ctx, varname, elements[groupid]); err2 != nil {
+				return []error{err2}
 			}
 		}
 		return nil
@@ -193,10 +190,10 @@ func RegexpVars(regex string, vars map[int]string) CompareFn {
 
 // StoreVar allows storing the actual value in a variable instead of checking its content
 func StoreVar(name string) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		// Don't compare but store the actual value using the expectedStr as variable name
-		if err := r.SetVariable(name, ctx.Actual); err != nil {
-			return err
+		if err := r.setVariable(ctx, name, ctx.Actual); err != nil {
+			return []error{err}
 		}
 		return nil
 	}
@@ -204,16 +201,16 @@ func StoreVar(name string) CompareFn {
 
 // LoadVar allows loading the value of the variable and then comparing it with the actual value
 func LoadVar(name string) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		// Compare actual value with the loaded value (which might be a string or not)
 		value := r.GetVariable(name)
-		return r.compare(value, ctx.Actual)
+		return r.compare(value, ctx.Actual, ctx.Path)
 	}
 }
 
 // Any allows you to completely ignore the value
 func Any() CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		return nil
 	}
 }
@@ -222,11 +219,11 @@ func Any() CompareFn {
 // All the comparisons have to be valid to be considered as valid.
 // The comparisons are evaluated in order and stop on the first failure
 func And(cmp ...interface{}) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		for _, comparer := range cmp {
-			err := r.compare(comparer, ctx.Actual)
-			if err != nil {
-				return err
+			errs := r.compare(comparer, ctx.Actual, ctx.Path)
+			if len(errs) > 0 {
+				return errs
 			}
 		}
 		return nil
@@ -238,21 +235,23 @@ func And(cmp ...interface{}) CompareFn {
 // The comparisons are evaluated in order and do not stop on the first success
 // this way you can use Or(StoreVar("myvar"), ...)
 func Or(cmp ...interface{}) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		if len(cmp) == 0 {
 			return nil
 		}
 
-		errs := []string{}
+		allErrs := []error{}
+		failed := 0
 		for _, comparer := range cmp {
-			err := r.compare(comparer, ctx.Actual)
-			if err != nil {
-				errs = append(errs, err.Error())
+			errs := r.compare(comparer, ctx.Actual, ctx.Path)
+			if len(errs) > 0 {
+				failed++
+				allErrs = append(allErrs, errs...)
 			}
 		}
 		// Return errors only if all failed
-		if len(errs) == len(cmp) {
-			return errors.New(strings.Join(errs, "\n"))
+		if failed == len(cmp) {
+			return allErrs
 		}
 		return nil
 	}
@@ -261,11 +260,11 @@ func Or(cmp ...interface{}) CompareFn {
 // Not means we don't expect the given value.
 // It works as a boolean 'not' operator on the comparison
 func Not(value interface{}) CompareFn {
-	return func(r *Rehapt, ctx compareCtx) error {
+	return func(r *Rehapt, ctx compareCtx) []error {
 		// Normal comparison, but error means ok and no error means error
-		err := r.compare(value, ctx.Actual)
-		if err == nil {
-			return fmt.Errorf("expected not %v, got %v", value, ctx.Actual)
+		errs := r.compare(value, ctx.Actual, ctx.Path)
+		if len(errs) == 0 {
+			return []error{ctx.Errorf("expected not %v, got %v", value, ctx.Actual)}
 		}
 		return nil
 	}
