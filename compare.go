@@ -90,11 +90,7 @@ func (r *Rehapt) sliceCompare(ctx compareCtx) []error {
 		expectedElement := ctx.ExpectedValue.Index(i)
 		actualElement := ctx.ActualValue.Index(i)
 		if cmpErrs := r.compare(expectedElement.Interface(), actualElement.Interface(), fmt.Sprintf("%v[%d]", ctx.Path, i)); len(cmpErrs) > 0 {
-			for _, cmpErr := range cmpErrs {
-				//errs = append(errs, fmt.Errorf("slice element %v does not match. %v", i, cmpErr))
-				//errs = append(errs, fmt.Errorf("[%d]%v", i, cmpErr))
-				errs = append(errs, cmpErr)
-			}
+			errs = append(errs, cmpErrs...)
 		}
 	}
 
@@ -130,11 +126,7 @@ func (r *Rehapt) partialMapCompare(ctx compareCtx) []error {
 		}
 
 		if cmpErrs := r.compare(expectedElement.Interface(), actualElement.Interface(), fmt.Sprintf("%v.%v", ctx.Path, key)); len(cmpErrs) > 0 {
-			for _, cmpErr := range cmpErrs {
-				//errs = append(errs, fmt.Errorf("map element [%v] does not match. %v", key, cmpErr))
-				//errs = append(errs, fmt.Errorf("[%v]%v", key, cmpErr))
-				errs = append(errs, cmpErr)
-			}
+			errs = append(errs, cmpErrs...)
 		}
 	}
 
@@ -177,11 +169,7 @@ func (r *Rehapt) mapCompare(ctx compareCtx) []error {
 		}
 
 		if cmpErrs := r.compare(expectedElement.Interface(), actualElement.Interface(), fmt.Sprintf("%v.%v", ctx.Path, key)); len(cmpErrs) > 0 {
-			for _, cmpErr := range cmpErrs {
-				//errs = append(errs, fmt.Errorf("map element [%v] does not match. %v", key, cmpErr))
-				//errs = append(errs, fmt.Errorf("[%v]%v", key, cmpErr))
-				errs = append(errs, cmpErr)
-			}
+			errs = append(errs, cmpErrs...)
 		}
 	}
 
